@@ -1,0 +1,7 @@
+celery==5.2.7
+w3lib==2.0.1
+sklearn
+parsel==1.6.0
+pandas==1.4.4
+matplotlib==3.5.3
+networkx==2.8.6
