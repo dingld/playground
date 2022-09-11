@@ -5,7 +5,6 @@ import networkx as nx
 from matplotlib import pyplot as plt
 
 from brainstorming.search.parser import html
-from networkx.drawing.nx_pydot import graphviz_layout
 
 logging.basicConfig(
     level=logging.DEBUG, format='%(asctime)s [%(name)s] %(levelname)s: %(message)s'

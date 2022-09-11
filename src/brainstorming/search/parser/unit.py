@@ -50,7 +50,7 @@ class HtmlNode:
         return HtmlNode.from_element(self.html_element.getparent(), self.tree)
 
     def has_ancestor(self, node):
-        return self.xpath() in node.xpath()
+        return node.xpath() in self.xpath()
 
     def has_ancestor_in(self, nodes):
         return any([self.has_ancestor(node) for node in nodes])
@@ -68,6 +68,22 @@ class HtmlNodeGraph:
         self.members = members
         self._xpath = ""
         self._depth = 0
+
+    def head(self):
+        path = self.xpath()
+        if not path.startswith("/"):
+            path = "/" + path
+
+        parent_path, tag = path.rsplit("/", maxsplit=1)
+        tree = self.members[0].tree
+        nodes = tree.xpath(parent_path)
+        node = nodes[0]
+        attrib = dict(node.attrib)
+        if attrib.get("id"):
+            return "#%s > %s" % (attrib['id'], tag)
+        if attrib.get("class"):
+            return "%s.%s > %s" % (node.tag, attrib['class'], tag)
+        return path
 
     def xpath(self):
         if not self._xpath:
@@ -89,20 +105,6 @@ class HtmlNodeGraph:
 
     def __len__(self):
         return len(self.members)
-
-
-def pre_filter_by_group_size(nodes: List[HtmlNode], minimum=3) -> List[HtmlNode]:
-    groups = {}
-    for node in nodes:
-        key = str(node)
-        groups[key] = groups.get(key, 0) + 1
-    output = []
-    for node in nodes:
-        key = str(node)
-        if groups[key] < minimum:
-            continue
-        output.append(node)
-    return output
 
 
 def longest_common_prefix(prefixes: List[str]) -> str:

@@ -8,7 +8,7 @@ from parsel import Selector
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import OneHotEncoder
 
-from brainstorming.search.parser.unit import (HtmlNode, pre_filter_by_group_size, HtmlNodeGraph)
+from brainstorming.search.parser.unit import (HtmlNode, HtmlNodeGraph)
 
 logger = logging.getLogger("parser.html")
 
@@ -23,7 +23,7 @@ def parse_as_nodes(html: str, url, minimum: int = 5, css: str = "div[class]",
         filtered_nodes = list(filter(lambda x: x.children, filtered_nodes))
     if with_text:
         filtered_nodes = list(filter(lambda x: x.html_element.text_content(), filtered_nodes))
-    logging.info("parse filtered nodes=%d/%d, url=%s", len(filtered_nodes), len(nodes), url)
+    logging.debug("parse filtered nodes=%d/%d, url=%s", len(filtered_nodes), len(nodes), url)
     return filtered_nodes
 
 
@@ -50,17 +50,33 @@ def build_graph(groups: Dict[int, List[HtmlNode]]):
         logging.debug("graph label=%d, member=%d, xpath=%s", group.label, len(group.members), group.xpath())
         # for m in members:
         #     g.add_edge("%d-%s" % (label, m), label)
-    graphs: List[HtmlNodeGraph] = sorted(graphs, key=lambda x: x.depth())
+    graphs: List[HtmlNodeGraph] = sorted(graphs, key=lambda x: x.depth(), reverse=True)
     for i in range(len(graphs)):
         u: HtmlNodeGraph = graphs[i]
+        logging.info("label %s of depth %d ", u.label, u.depth())
         if i == len(graphs) - 1:
-            g.add_edge(u.xpath(), u.label)
+            g.add_edge(u.head(), u.label)
             break
         for j in range(i + 1, len(graphs)):
             v: HtmlNodeGraph = graphs[j]
             if u.subgraph_to(v):
                 g.add_edge(v.label, u.label)
+                logging.info("label %s of depth %d is subgraph to %d depth %d", u.label, u.depth(), v.label, v.depth())
                 break
         else:
-            g.add_edge(u.xpath(), u.label)
+            g.add_edge(u.head(), u.label)
     return g
+
+
+def pre_filter_by_group_size(nodes: List[HtmlNode], minimum=3) -> List[HtmlNode]:
+    groups = {}
+    for node in nodes:
+        key = str(node)
+        groups[key] = groups.get(key, 0) + 1
+    output = []
+    for node in nodes:
+        key = str(node)
+        if groups[key] < minimum:
+            continue
+        output.append(node)
+    return output
