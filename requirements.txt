@@ -5,3 +5,4 @@ parsel==1.6.0
 pandas==1.4.4
 matplotlib==3.5.3
 networkx==2.8.6
+httpx==0.23.0
