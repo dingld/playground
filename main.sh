@@ -1,0 +1,1 @@
+uvicorn scraper.controller.app:app

@@ -8,16 +8,16 @@ from parsel import Selector
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import OneHotEncoder
 
-from brainstorming.search.parser.unit import (HtmlNode, HtmlNodeGraph)
+from scraperx.utils.parser_ml.feature import (HtmlNode, HtmlNodeGraph)
 
-logger = logging.getLogger("parser.html")
+logger = logging.getLogger("parser_ml.html")
 
 
 def parse_as_nodes(html: str, url, minimum: int = 5, css: str = "div[class]",
                    with_children: bool = True, with_text: bool = True) -> List[HtmlNode]:
     sel: Selector = Selector(text=html, base_url=url)
     tree = etree.ElementTree(sel.root)
-    nodes = list(map(lambda x: HtmlNode.from_element(x.root, tree), sel.css("body %s" % css)))
+    nodes = list(map(lambda x: HtmlNode.from_element(x, tree), sel.css("body %s" % css)))
     filtered_nodes = pre_filter_by_group_size(nodes, minimum)
     if with_children:
         filtered_nodes = list(filter(lambda x: x.children, filtered_nodes))

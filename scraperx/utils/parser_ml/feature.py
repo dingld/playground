@@ -5,6 +5,7 @@ from typing import Dict, List
 
 from lxml.etree import ElementTree
 from lxml.html import HtmlElement
+from parsel import Selector
 
 
 @dataclass
@@ -13,18 +14,21 @@ class HtmlNode:
     class_name: str
     attrib: Dict[str, str]
     children: List
+    sel: Selector
     html_element: HtmlElement
     tree: ElementTree
 
     @classmethod
-    def from_element(cls, node: HtmlElement, tree: ElementTree):
+    def from_element(cls, sel: Selector, tree: ElementTree):
+        node = sel.root
         attrib = dict(node.attrib)
         return cls(tag=node.tag,
                    class_name=attrib.pop("class", ""),
                    attrib=attrib,
-                   children=list(map(lambda x: cls.from_element(x, tree), node.getchildren())),
+                   children=list(map(lambda x: cls.from_element(x, tree), sel.xpath("./*"))),
+                   sel=sel,
                    html_element=node,
-                   tree=tree
+                   tree=tree,
                    )
 
     def row(self):
