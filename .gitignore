@@ -130,3 +130,7 @@ dmypy.json
 
 # virtualenv
 .brainstorming
+
+*/_trial_temp
+.venv
+.configs/*
