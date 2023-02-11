@@ -14,7 +14,7 @@ class TaskStatus:
         return TaskStatus.debug <= status <= TaskStatus.stop
 
 
-class TaskRequestModel(BaseModel):
+class TaskRequestEntity(BaseModel):
     name: str
     start_urls: List[str]
     cron: str
@@ -31,30 +31,30 @@ class TaskResponseModel(BaseModel):
     updated_at: datetime
 
 
-class TaskListResponses(BaseModel):
+class TaskListResponseEntity(BaseModel):
     total: int
     page: int
     size: int
     data: List[TaskResponseModel]
 
 
-class TaskSingleResponse(BaseModel):
+class TaskSingleResponseEntity(BaseModel):
     ok: int
     data: TaskResponseModel = None
 
 
-class TaskCreateUpdateResponse(BaseModel):
+class TaskCreateUpdateResponseEntity(BaseModel):
     ok: int
     message: str = ""
     data: TaskResponseModel = None
 
 
-class TaskDeleteResponse(BaseModel):
+class TaskDeleteResponseEntity(BaseModel):
     ok: int
     message: str = ""
 
 
-class TaskToggleResponse(BaseModel):
+class TaskToggleResponseEntity(BaseModel):
     ok: int
     message: str = ""
     data: TaskResponseModel = None

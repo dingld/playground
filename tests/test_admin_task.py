@@ -41,10 +41,9 @@ class AdminTaskTest(unittest.TestCase):
 
     def test_update_task_success(self):
         item = {
-            "name": "search",
+            "name": "search-baidu",
             "start_urls": [
                 "https://www.baidu.com/s?wd=hello",
-                "https://cn.bing.com/search?q=hello"
             ],
             "cron": "30 8 * * *",
             "status": 0,
@@ -68,7 +67,7 @@ class AdminTaskTest(unittest.TestCase):
         logger.info(pformat(resp.json()))
 
     def test_list_tasks(self):
-        for page in range(1, 6):
+        for page in range(1, 4):
             resp = requests.get(self.url + "?page=%d" % page)
             logger.info(resp.json())
 
