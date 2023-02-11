@@ -1,5 +1,5 @@
 import json
-
+from datetime import datetime
 from scraperx.entities.task import TaskResponseModel, TaskRequestModel, TaskStatus
 from scraperx.model.task import TaskModel
 
@@ -15,5 +15,6 @@ def convert_task_resquest_model(request: TaskRequestModel) -> TaskModel:
     model.name = request.name
     model.cron = request.cron
     model.start_urls = json.dumps(request.start_urls)
-    model.start_urls = TaskStatus.debug
+    model.status = TaskStatus.debug
+    model.updated_at = datetime.now()
     return model

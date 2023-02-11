@@ -3,13 +3,15 @@
 2. task start/stop
 3. task progress
 """
+import datetime
+import json
 
 from fastapi import FastAPI
 from sqlalchemy.orm import Session
 
 from scraperx.dao.session import SessionLocal
-from scraperx.entities.task import TaskListResponses, TaskCreateResponse, TaskDeleteResponse, TaskToggleResponse
-from scraperx.entities.task import TaskResponseModel, TaskRequestModel, TaskStatus
+from scraperx.entities.task import TaskListResponses, TaskCreateUpdateResponse, TaskDeleteResponse, TaskToggleResponse
+from scraperx.entities.task import TaskResponseModel, TaskRequestModel, TaskStatus, TaskSingleResponse
 from scraperx.model.task import TaskModel
 from scraperx.utils.converter import convert_task_response_model, convert_task_resquest_model
 
@@ -28,34 +30,40 @@ async def list_project(page: int = 1, size: int = 10) -> TaskListResponses:
 
 
 @app.get("/{task_id}")
-async def get_task(task_id: int) -> TaskResponseModel:
+async def get_task(task_id: int) -> TaskSingleResponse:
     session: Session = SessionLocal()
     item = session.query(TaskModel).filter_by(id=task_id).first()
     if not item:
-        return {}
+        return TaskSingleResponse.construct(ok=1)
 
-    return convert_task_response_model(item)
+    return TaskSingleResponse.construct(ok=0, data=convert_task_response_model(item))
 
 
 @app.post("/")
-async def create_task(request: TaskRequestModel) -> TaskCreateResponse:
+async def create_task(request: TaskRequestModel) -> TaskCreateUpdateResponse:
     model = convert_task_resquest_model(request)
     with SessionLocal() as session:
         if session.query(TaskModel).filter_by(name=request.name).count():
-            return TaskCreateResponse.construct(status=1, message="task already exists")
+            return TaskCreateUpdateResponse.construct(ok=1, message="task already exists")
+        model.created_at = model.updated_at
         session.add(model)
-    return TaskCreateResponse.construct(status=0, data=convert_task_response_model(model))
+        session.commit()
+        return TaskCreateUpdateResponse.construct(ok=0, data=convert_task_response_model(model))
 
 
 @app.put("/{task_id}")
-async def update_task(task_id: int, request: TaskRequestModel) -> TaskCreateResponse:
-    model = convert_task_resquest_model(request)
-    model.id = task_id
+async def update_task(task_id: int, request: TaskRequestModel) -> TaskCreateUpdateResponse:
     with SessionLocal() as session:
-        if session.query(TaskModel).filter_by(id=task_id).count() == 0:
-            return TaskCreateResponse.construct(status=1, message="task not exists")
+        model: TaskModel = session.query(TaskModel).filter_by(id=task_id).first()
+        if not model:
+            return TaskCreateUpdateResponse.construct(ok=1, message="task not exists")
+        model.name = request.name
+        model.cron = request.cron
+        model.start_urls = json.dumps(request.start_urls)
+        model.updated_at = datetime.datetime.now()
         session.merge(model)
-    return TaskCreateResponse.construct(status=0, data=convert_task_response_model(model))
+        session.commit()
+        return TaskCreateUpdateResponse.construct(ok=0, data=convert_task_response_model(model))
 
 
 @app.delete("/{task_id}")
@@ -63,19 +71,21 @@ async def delete_task(task_id: int) -> TaskDeleteResponse:
     with SessionLocal() as session:
         obj = session.query(TaskModel).filter_by(id=task_id).first()
         if not obj:
-            return TaskDeleteResponse.construct(status=1, message="task not exists")
+            return TaskDeleteResponse.construct(ok=1, message="task not exists")
         session.delete(obj)
-    return TaskDeleteResponse.construct(status=0)
+        session.commit()
+    return TaskDeleteResponse.construct(ok=0)
 
 
 @app.post("/{task_id}/toggle/{status}")
 async def toggle_task(task_id: int, status: int) -> TaskToggleResponse:
     if not TaskStatus.is_legal(status):
-        return TaskToggleResponse.construct(status=1, message="ilegal status")
+        return TaskToggleResponse.construct(ok=1, message="ilegal status")
     with SessionLocal() as session:
         obj: TaskModel = session.query(TaskModel).filter_by(id=task_id).first()
         if not obj:
-            return TaskToggleResponse.construct(status=1, message="task not exists")
+            return TaskToggleResponse.construct(ok=1, message="task not exists")
         obj.status = status
-        session.delete(obj)
-    return TaskToggleResponse.construct(status=0)
+        session.merge(obj)
+        session.commit()
+        return TaskToggleResponse.construct(ok=0, data=convert_task_response_model(obj))

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime, BLOB, SmallInteger
+from sqlalchemy import Column, String, Integer, DateTime, TEXT, SmallInteger
 
 from scraperx.model.base import DeclarativeBase
 
@@ -14,7 +14,7 @@ class TaskModel(DeclarativeBase):
     )
     id = Column(Integer, primary_key=True)
     name = Column(String(32), nullable=False, unique=True)
-    start_urls = Column(BLOB, nullable=False)
+    start_urls = Column(TEXT, nullable=False)
     cron = Column(String(40), nullable=False)
     status = Column(SmallInteger, nullable=False)
     created_at = Column(DateTime, nullable=False)

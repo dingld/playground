@@ -15,7 +15,6 @@ class TaskStatus:
 
 
 class TaskRequestModel(BaseModel):
-    id: int
     name: str
     start_urls: List[str]
     cron: str
@@ -39,17 +38,23 @@ class TaskListResponses(BaseModel):
     data: List[TaskResponseModel]
 
 
-class TaskCreateResponse(BaseModel):
+class TaskSingleResponse(BaseModel):
     ok: int
-    message: str
-    data: TaskResponseModel
+    data: TaskResponseModel = None
+
+
+class TaskCreateUpdateResponse(BaseModel):
+    ok: int
+    message: str = ""
+    data: TaskResponseModel = None
 
 
 class TaskDeleteResponse(BaseModel):
     ok: int
-    message: str
+    message: str = ""
 
 
 class TaskToggleResponse(BaseModel):
     ok: int
-    message: str
+    message: str = ""
+    data: TaskResponseModel = None
