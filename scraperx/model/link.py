@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy import Column, String, Integer, DateTime, SmallInteger
 
 from scraperx.model.base import DeclarativeBase
 
@@ -19,7 +19,7 @@ class LinkModel(DeclarativeBase):
     url = Column(String(4096), nullable=False)
     response_body_size = Column(Integer, nullable=True)
     status_code = Column(String(20), nullable=True)
-    retry = Column(Integer, nullable=True)
+    retry = Column(SmallInteger, nullable=True)
     error = Column(String(128), nullable=True)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)

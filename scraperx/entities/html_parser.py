@@ -30,6 +30,7 @@ class HtmlParserRuleEntity(BaseModel):
 
 
 class HtmlRuleRequestEntity(BaseModel):
+    id: int = 0
     name: str
     domain: str
     path: str
