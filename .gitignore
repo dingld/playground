@@ -128,9 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# virtualenv
-.brainstorming
 
 */_trial_temp
-.configs/*
+configs/*
 .idea/*
+
+extensions/sqlite3/*

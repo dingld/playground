@@ -23,7 +23,7 @@ async def create_rule(request: HtmlRuleRequestEntity) -> HtmlRuleCreateUpdateRes
     return html_parser_service.create_obj(request)
 
 
-@app.post("/{rule_id}")
+@app.put("/{rule_id}")
 async def update_rule(rule_id: int, request: HtmlRuleRequestEntity) -> HtmlRuleCreateUpdateResponseEntity:
     return html_parser_service.update_obj(rule_id=rule_id, request=request)
 

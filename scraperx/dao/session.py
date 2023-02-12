@@ -21,6 +21,7 @@ if __name__ == "__main__":
     from scraperx.model.item import *
     from scraperx.model.link import *
     from scraperx.model.task import *
+    from scraperx.model.html_parer import *
     from scraperx.model.base import DeclarativeBase
 
     print("sqlalchemy path: %s" % SQLALCHEMY_DATABASE_URL_DEFAULT)

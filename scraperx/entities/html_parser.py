@@ -19,7 +19,7 @@ class HtmlRuleStatus:
         return HtmlRuleStatus.debug <= status <= HtmlRuleStatus.stop
 
 
-class HtmlCssRule(BaseModel):
+class HtmlParserRuleEntity(BaseModel):
     name: str
     domain: str
     path: str
@@ -35,16 +35,19 @@ class HtmlRuleRequestEntity(BaseModel):
     path: str
     type: int
     rules: list
-    created_at: datetime
-    updated_at: datetime
+    status: int = HtmlRuleStatus.debug
+    ttl: int
 
 
 class HtmlRuleResponseEntity(BaseModel):
+    id: int
     name: str
     domain: str
     path: str
     type: int
     rules: list
+    status: int
+    ttl: int
     created_at: datetime
     updated_at: datetime
 
@@ -58,7 +61,7 @@ class HtmlRuleListResponseEntity(BaseModel):
 
 class HtmlRuleSingleResponseEntity(BaseModel):
     ok: int
-    data: List[HtmlRuleResponseEntity]
+    data: HtmlRuleResponseEntity = None
 
 
 class HtmlRuleCreateUpdateResponseEntity(BaseModel):

@@ -1,9 +1,10 @@
 import json
 from datetime import datetime
-from scraperx.entities.task import TaskResponseModel, TaskRequestEntity, TaskStatus
+
 from scraperx.entities.html_parser import HtmlRuleResponseEntity, HtmlRuleRequestEntity
-from scraperx.model.task import TaskModel
+from scraperx.entities.task import TaskResponseModel, TaskRequestEntity, TaskStatus
 from scraperx.model.html_parer import HtmlRuleModel
+from scraperx.model.task import TaskModel
 
 
 def convert_task_response_model(item: TaskModel) -> TaskResponseModel:
@@ -22,25 +23,30 @@ def convert_task_resquest_model(request: TaskRequestEntity) -> TaskModel:
     return model
 
 
-def convert_html_rule_model(entity: HtmlRuleRequestEntity) -> HtmlRuleModel:
+def convert_request_to_html_rule_model(entity: HtmlRuleRequestEntity) -> HtmlRuleModel:
     model = HtmlRuleModel()
     model.name = entity.name
     model.domain = entity.domain
     model.path = entity.path
     model.type = entity.type
+    model.ttl = entity.ttl
     model.rules = json.dumps(entity.rules)
+    model.status = entity.status
     model.updated_at = datetime.now()
     return model
 
 
-def convert_to_html_rule_response_entity(model: HtmlRuleModel) -> HtmlRuleResponseEntity:
-    entity = HtmlRuleResponseEntity()
-    entity.name = model.name
-    entity.domain = model.domain
-    entity.path = model.path
-    entity.type = model.type
-    entity.rules = model.rules
-
-    model.updated_at = model.updated_at
-    entity.created_at = model.created_at
+def convert_model_to_html_rule_response_entity(model: HtmlRuleModel) -> HtmlRuleResponseEntity:
+    entity = HtmlRuleResponseEntity.construct(
+        id=model.id,
+        name=model.name,
+        domain=model.domain,
+        path=model.path,
+        type=model.type,
+        rules=json.loads(model.rules),
+        ttl=model.ttl,
+        status=model.status,
+        updated_at=model.updated_at,
+        created_at=model.created_at
+    )
     return entity

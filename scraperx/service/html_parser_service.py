@@ -6,7 +6,7 @@ from scraperx.entities.html_parser import HtmlRuleRequestEntity, HtmlRuleListRes
     HtmlRuleSingleResponseEntity, HtmlRuleCreateUpdateResponseEntity, HtmlRuleDeleteResponseEntity, \
     HtmlRuleToggleResponseEntity, HtmlRuleStatus
 from scraperx.model.html_parer import HtmlRuleModel
-from scraperx.utils.converter import convert_html_rule_model, convert_to_html_rule_response_entity
+from scraperx.utils.converter import convert_request_to_html_rule_model, convert_model_to_html_rule_response_entity
 
 
 def get_by_id(rule_id: int) -> HtmlRuleSingleResponseEntity:
@@ -15,7 +15,7 @@ def get_by_id(rule_id: int) -> HtmlRuleSingleResponseEntity:
     if not item:
         return HtmlRuleSingleResponseEntity.construct(ok=1)
 
-    return HtmlRuleSingleResponseEntity.construct(ok=0, data=convert_to_html_rule_response_entity(item))
+    return HtmlRuleSingleResponseEntity.construct(ok=0, data=convert_model_to_html_rule_response_entity(item))
 
 
 def list_by_page_size(page: int, size: int):
@@ -24,24 +24,24 @@ def list_by_page_size(page: int, size: int):
     query = session.query(HtmlRuleModel).limit(size)
     if page > 1:
         query = query.offset(page * size - size)
-    data = list(map(convert_to_html_rule_response_entity, query.all()))
+    data = list(map(convert_model_to_html_rule_response_entity, query.all()))
     return HtmlRuleListResponseEntity.construct(total=total, page=page, size=size, data=data)
 
 
 def create_obj(request: HtmlRuleRequestEntity):
     with SessionLocal() as session:
-        model = convert_html_rule_model(request)
-        if session.query(HtmlRuleRequestEntity).filter_by(name=request.name).count():
+        model = convert_request_to_html_rule_model(request)
+        if exist_by_name(session, model.name):
             return HtmlRuleCreateUpdateResponseEntity.construct(ok=1, message="rule already exists")
         model.created_at = model.updated_at
         session.add(model)
         session.commit()
-        return HtmlRuleCreateUpdateResponseEntity.construct(ok=0, data=convert_to_html_rule_response_entity(model))
+        return HtmlRuleCreateUpdateResponseEntity.construct(ok=0, data=convert_model_to_html_rule_response_entity(model))
 
 
 def update_obj(rule_id: int, request: HtmlRuleRequestEntity):
     with SessionLocal() as session:
-        convert_html_rule_model(request)
+        convert_request_to_html_rule_model(request)
 
         model: HtmlRuleModel = session.query(HtmlRuleModel).filter_by(id=rule_id).first()
         if not model:
@@ -57,7 +57,7 @@ def update_obj(rule_id: int, request: HtmlRuleRequestEntity):
         model.updated_at = datetime.datetime.now()
         session.merge(model)
         session.commit()
-        return HtmlRuleCreateUpdateResponseEntity.construct(ok=0, data=convert_to_html_rule_response_entity(model))
+        return HtmlRuleCreateUpdateResponseEntity.construct(ok=0, data=convert_model_to_html_rule_response_entity(model))
 
 
 def exist_by_name(session: SessionLocal, name: str):
@@ -85,4 +85,4 @@ def toggle_start_stop(rule_id: int, status: int):
         obj.status = status
         session.merge(obj)
         session.commit()
-        return HtmlRuleToggleResponseEntity.construct(ok=0, data=convert_to_html_rule_response_entity(obj))
+        return HtmlRuleToggleResponseEntity.construct(ok=0, data=convert_model_to_html_rule_response_entity(obj))
