@@ -11,3 +11,6 @@ urllib3==1.26.14
 SQLAlchemy==2.0.3
 pymysql==1.0.2
 PyYAML==6.0
+duckdb==0.6.1
+pyarrow==11.0.0
+jmespath==1.0.1

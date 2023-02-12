@@ -1,11 +1,12 @@
-from fastapi import FastAPI
 import uvicorn
+from fastapi import FastAPI
 
+from scraperx.controller import tasks, html_parser
 from scraperx.dao import session
-from scraperx.controller import tasks
 
 app = FastAPI()
 app.mount("/api/v1/admin/tasks", tasks.app, "tasks")
+app.mount("/api/v1/admin/html_parser", html_parser.app, "parser")
 
 
 @app.on_event("startup")

@@ -43,6 +43,17 @@ class HtmlNode:
         item['xpath'] = self.xpath_strim()
         return item
 
+    def dict(self):
+        d = dict(
+            tag=self.tag,
+            class_name=self.class_name,
+        )
+        d.update(self.attrib)
+        d.update(html=self.sel.xpath(".").extract_first())
+        d.update(text=self.sel.xpath("string(.)").extract_first())
+
+        return d
+
     def xpath_strim(self):
         path = self.xpath()
         return re.sub("\[\d+\]", "", path)

@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 
 class HtmlRuleType:
-    link = 0
-    item = 1
+    link = 10
+    item = 20
 
 
 class HtmlRuleStatus:
@@ -19,13 +19,22 @@ class HtmlRuleStatus:
         return HtmlRuleStatus.debug <= status <= HtmlRuleStatus.stop
 
 
+class HtmlCssRule(BaseModel):
+    name: str
+    domain: str
+    path: str
+    type: int
+    rules: list
+    created_at: datetime
+    updated_at: datetime
+
 
 class HtmlRuleRequestEntity(BaseModel):
     name: str
     domain: str
     path: str
     type: int
-    rules: str
+    rules: list
     created_at: datetime
     updated_at: datetime
 
