@@ -1,12 +1,13 @@
 import json
 from datetime import datetime
 from typing import List
+from urllib3.util import parse_url
 
 from scraperx.entities.html_parser import HtmlRuleResponseEntity, HtmlRuleRequestEntity
 from scraperx.entities.task import TaskResponseModel, TaskRequestEntity, TaskStatus
 from scraperx.model.html_parer import HtmlRuleModel
 from scraperx.model.task import TaskModel
-from scraperx.utils.parser_ml.feature import HtmlNode
+from scraperx.utils.parser_ml.feature import HtmlNode, HtmlClusterGraph
 
 
 def convert_task_response_model(item: TaskModel) -> TaskResponseModel:
@@ -58,13 +59,14 @@ def convert_html_node_to_data(node: HtmlNode) -> dict:
     return node.dict()
 
 
-def convert_html_node_group_to_rule(label: int, nodes: List[HtmlNode]) -> HtmlRuleRequestEntity:
-    cssselectors = ",".join(set(map(str, nodes)))
+def convert_html_node_group_to_rule(label: int, nodes: List[HtmlNode], url: str) -> HtmlRuleRequestEntity:
+    urlpart = parse_url(url)
+    g = HtmlClusterGraph(label, nodes)
     return HtmlRuleRequestEntity.construct(
         id=label,
-        name=cssselectors,
-        domain="*",
-        path="/",
+        name=g.css_head(),
+        domain=urlpart.netloc,
+        path=urlpart.path,
         type=0,
         ttl=60 * 60 * 24,
         rules=[],

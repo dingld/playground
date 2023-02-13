@@ -1,3 +1,4 @@
+import logging
 import re
 from dataclasses import dataclass
 from itertools import takewhile
@@ -36,11 +37,25 @@ class HtmlNode:
             tag=self.tag,
             class_name=self.class_name
         )
-        for x in self.attrib:
-            item["attrib.%s" % x] = 1
-        for y in self.children:
-            item["children.%s" % y] = 1
-        item['xpath'] = self.xpath_strim()
+        # for x in self.attrib:
+        #     item["attrib.%s" % x] = 1
+        #
+        # for y in self.children:
+        #     item["children.%s" % y] = 1
+
+        item['head'] = self.get_head(self.html_element)
+        for key, value in item.items():
+            if isinstance(value, str):
+                new_value = re.sub("[\d]{2,}", "+escape_numbers", value)
+                if new_value != value:
+                    logging.debug("esacpe %s value: %s -> %s", key, value, new_value)
+                    item[key] = new_value
+        for key, value in list(item.items()):
+            if isinstance(key, str):
+                new_key = re.sub("[\d]{2,}", "+escape_numbers", key)
+                if new_key != key:
+                    logging.debug("esacpe key %s: %s -> %s", key, new_key, new_value)
+                    item[new_key] = item.pop(key)
         return item
 
     def dict(self):
@@ -61,22 +76,56 @@ class HtmlNode:
     def xpath(self):
         return self.tree.getpath(self.html_element)
 
+    def depth(self):
+        return self.get_depth(self.html_element)
+
     def parent(self):
         return HtmlNode.from_element(self.html_element.getparent(), self.tree)
 
-    def has_ancestor(self, node):
-        return node.xpath() in self.xpath()
+    def has_ancestor(self, element: HtmlElement, step: int = 100):
+        current_node = self.html_element
+        while current_node != element and step > 0 and current_node is not None and self.get_depth(current_node) > 1:
+            step -= 1
+            parent = current_node.getparent()
+            if parent == element:
+                return True
+            current_node = parent
+        return False
+
+    def get_css(self, step: int = 100, full: bool = False):
+        cssselectors = []
+        current_node = self.html_element
+        while step > 0 and current_node is not None and self.get_depth(current_node) > 1:
+            step -= 1
+            head = self.get_head(current_node)
+            cssselectors.append(head)
+            if not full and "." in head:
+                break
+            current_node = current_node.getparent()
+        return " > ".join(cssselectors[::-1])
 
     def has_ancestor_in(self, nodes):
-        return any([self.has_ancestor(node) for node in nodes])
+        return any([self.has_ancestor(node.html_element) for node in nodes])
+
+    def get_head(self, element: HtmlElement):
+        id = dict(element.attrib).get("id", "")
+        if id:
+            return "#.%s" % id
+        class_name = dict(element.attrib).get("class", "")
+        if class_name:
+            return "%s.%s" % (element.tag, ".".join(class_name.split(" ")))
+        return element.tag
+
+    def get_depth(self, element: HtmlElement):
+        return len(self.tree.getpath(element).split("/"))
 
     def __str__(self):
-        return "%s.%s" % (self.tag, ".".join(self.class_name.split(" ")))
+        return self.get_head(self.html_element)
 
     __repr__ = __str__
 
 
-class HtmlNodeGraph:
+class HtmlClusterGraph:
 
     def __init__(self, label: int, members: List[HtmlNode]):
         self.label = label
@@ -84,21 +133,11 @@ class HtmlNodeGraph:
         self._xpath = ""
         self._depth = 0
 
-    def head(self):
-        path = self.xpath()
-        if not path.startswith("/"):
-            path = "/" + path
+    def head(self, full: bool = False):
+        return "[%d] %s" % (self.label, self.css_head(full))
 
-        parent_path, tag = path.rsplit("/", maxsplit=1)
-        tree = self.members[0].tree
-        nodes = tree.xpath(parent_path)
-        node = nodes[0]
-        attrib = dict(node.attrib)
-        if attrib.get("id"):
-            return "#%s > %s" % (attrib['id'], tag)
-        if attrib.get("class"):
-            return "%s.%s > %s" % (node.tag, attrib['class'], tag)
-        return path
+    def css_head(self, full: bool = False):
+        return ",".join(set(map(lambda x: x.get_css(full=full), self.members)))
 
     def xpath(self):
         if not self._xpath:
@@ -113,10 +152,8 @@ class HtmlNodeGraph:
         return self._depth
 
     def subgraph_to(self, graph):
-        for member in self.members:
-            if not member.has_ancestor_in(graph.members):
-                return False
-        return True
+        return all(map(lambda member: member.has_ancestor_in(graph.members),
+                       self.members))
 
     def __len__(self):
         return len(self.members)

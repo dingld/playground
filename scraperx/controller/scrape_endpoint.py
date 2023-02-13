@@ -40,9 +40,11 @@ async def download_and_parse(url: str) -> List[HtmlScrapeResultEntity]:
 
 
 @app.get("/html_and_ml")
-async def download_and_parse(url: str, eps: float = 0.2) -> List[HtmlScrapeResultEntity]:
+async def download_and_ml(url: str, eps: float = 0.2, css: str = "*[class]", root: bool = True, href: bool = True) -> \
+List[
+    HtmlScrapeResultEntity]:
     html = await scrape_service.download_html(url)
-    return scrape_service.parse_html_ml(html, url, eps=eps)
+    return scrape_service.parse_html_ml(html, url, eps=eps, css=css, root=root, href=href)
 
 
 @app.post("/parse")
@@ -51,13 +53,16 @@ async def parse(request: HtmlScrapeParseRequestEntity) -> HtmlScrapeResultEntity
 
 
 @app.post("/parse_factory")
-async def parse(request: HtmlScrapeParseFactoryRequestEntity) -> List[HtmlScrapeResultEntity]:
+async def parse_factory(request: HtmlScrapeParseFactoryRequestEntity) -> List[HtmlScrapeResultEntity]:
     return scrape_service.parse_html_with_rule_factory(html=request.html, url=request.url)
 
 
 @app.post("/parse_ml")
-async def parse(request: HtmlScrapeParseFactoryRequestEntity, eps: float = 0.2) -> List[HtmlScrapeResultEntity]:
-    return scrape_service.parse_html_ml(html=request.html, url=request.url, eps=eps)
+async def parse_ml(eps: float = 0.2,
+                   css: str = "*[class]", root: bool = True, href: bool = True,
+                   request: HtmlScrapeParseFactoryRequestEntity = None) -> List[
+    HtmlScrapeResultEntity]:
+    return scrape_service.parse_html_ml(html=request.html, url=request.url, eps=eps, css=css, root=root, href=href)
 
 
 @app.get("/crawler/{task_id}/start")

@@ -8,12 +8,12 @@ from parsel import Selector
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import OneHotEncoder
 
-from scraperx.utils.parser_ml.feature import (HtmlNode, HtmlNodeGraph)
+from scraperx.utils.parser_ml.feature import (HtmlNode, HtmlClusterGraph)
 
 logger = logging.getLogger("parser_ml.html")
 
 
-def parse_as_nodes(html: str, url, minimum: int = 5, css: str = "div[class]",
+def parse_as_nodes(html: str, url, minimum: int = 5, css: str = "*[class]",
                    with_children: bool = True, with_text: bool = True) -> List[HtmlNode]:
     sel: Selector = Selector(text=html, base_url=url)
     tree = etree.ElementTree(sel.root)
@@ -23,7 +23,7 @@ def parse_as_nodes(html: str, url, minimum: int = 5, css: str = "div[class]",
         filtered_nodes = list(filter(lambda x: x.children, filtered_nodes))
     if with_text:
         filtered_nodes = list(filter(lambda x: x.html_element.text_content(), filtered_nodes))
-    logging.debug("parse filtered nodes=%d/%d, url=%s", len(filtered_nodes), len(nodes), url)
+    logger.info("parse filtered nodes=%d/%d, url=%s", len(filtered_nodes), len(nodes), url)
     return filtered_nodes
 
 
@@ -39,32 +39,47 @@ def do_dbscan(vectors, eps: float = 0.5, min_samples: int = 3) -> DBSCAN:
     return clustering
 
 
-def build_graph(groups: Dict[int, List[HtmlNode]]):
+def build_graph(groups: Dict[int, List[HtmlNode]], context: dict):
     g = nx.DiGraph()
     color_map = {}
     graphs = []
     for label, members in groups.items():
         color_map[label] = label
-        group = HtmlNodeGraph(label, members)
-        graphs.append(group)
-        logging.debug("graph label=%d, member=%d, xpath=%s", group.label, len(group.members), group.xpath())
-        # for m in members:
-        #     g.add_edge("%d-%s" % (label, m), label)
-    graphs: List[HtmlNodeGraph] = sorted(graphs, key=lambda x: x.depth(), reverse=True)
-    for i in range(len(graphs)):
-        u: HtmlNodeGraph = graphs[i]
-        logging.info("label %s of depth %d ", u.label, u.depth())
-        if i == len(graphs) - 1:
-            g.add_edge(u.head(), u.label)
+        cluster_group = HtmlClusterGraph(label, members)
+        graphs.append(cluster_group)
+        logger.debug("graph label=%d, depth=%d, member=%d, head=%-30s, full=%s", cluster_group.label,
+                    cluster_group.depth(), len(cluster_group.members),
+                    cluster_group.head(), cluster_group.head(True))
+
+    # depth reverse search ancestor
+    graphs: List[HtmlClusterGraph] = sorted(graphs, key=lambda x: x.depth(), reverse=True)
+    subgraph_set = set()
+    for index, current_g in enumerate(graphs):
+        current_g: HtmlClusterGraph = current_g
+        logger.debug("*****" * 30)
+        logger.debug("current graph label=%d, depth=%d, member=%d, head=%-30s, full=%s", current_g.label,
+                    current_g.depth(), len(current_g.members), current_g.head(), current_g.head(True))
+        if index == len(graphs) - 1:
             break
-        for j in range(i + 1, len(graphs)):
-            v: HtmlNodeGraph = graphs[j]
-            if u.subgraph_to(v):
-                g.add_edge(v.label, u.label)
-                logging.info("label %s of depth %d is subgraph to %d depth %d", u.label, u.depth(), v.label, v.depth())
+        for next_g in graphs[index + 1:]:
+            if current_g == next_g:
+                continue
+            next_g: HtmlClusterGraph = next_g
+            if current_g.subgraph_to(next_g):
+                g.add_edge(next_g.label, current_g.label)
+                logging.debug("add edge: %s -> %s,  depth=%d, head=%s", next_g.label, current_g.label, next_g.depth(),
+                             next_g.head())
+                subgraph_set.add(current_g.label)
                 break
-        else:
-            g.add_edge(u.head(), u.label)
+
+    for current_g in graphs:
+        if current_g.label in subgraph_set:
+            continue
+        context[current_g.label] = current_g.head()
+        g.add_node(current_g.label)
+        context[current_g.label] = current_g.head()
+        logging.debug("set as root label=%s, head=%s, depth=%d", current_g.label, current_g.head(),
+                     current_g.depth())
     return g
 
 
