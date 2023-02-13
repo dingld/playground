@@ -1,10 +1,11 @@
 import datetime
 import json
+from typing import List
 
 from scraperx.dao.session import SessionLocal
 from scraperx.entities.html_parser import HtmlRuleRequestEntity, HtmlRuleListResponseEntity, \
     HtmlRuleSingleResponseEntity, HtmlRuleCreateUpdateResponseEntity, HtmlRuleDeleteResponseEntity, \
-    HtmlRuleToggleResponseEntity, HtmlRuleStatus
+    HtmlRuleToggleResponseEntity, HtmlRuleStatus, HtmlRuleResponseEntity
 from scraperx.model.html_parer import HtmlRuleModel
 from scraperx.utils.converter import convert_request_to_html_rule_model, convert_model_to_html_rule_response_entity
 
@@ -18,7 +19,14 @@ def get_by_id(rule_id: int) -> HtmlRuleSingleResponseEntity:
     return HtmlRuleSingleResponseEntity.construct(ok=0, data=convert_model_to_html_rule_response_entity(item))
 
 
-def list_by_page_size(page: int, size: int):
+def get_all() -> List[HtmlRuleResponseEntity]:
+    session = SessionLocal()
+    # items = session.query(HtmlRuleModel).filter_by(status=HtmlRuleStatus.ready).all()
+    items = session.query(HtmlRuleModel).all()
+    return list(map(convert_model_to_html_rule_response_entity, items))
+
+
+def get_by_page_size(page: int, size: int):
     session = SessionLocal()
     total = session.query(HtmlRuleModel).count()
     query = session.query(HtmlRuleModel).limit(size)
@@ -36,7 +44,8 @@ def create_obj(request: HtmlRuleRequestEntity):
         model.created_at = model.updated_at
         session.add(model)
         session.commit()
-        return HtmlRuleCreateUpdateResponseEntity.construct(ok=0, data=convert_model_to_html_rule_response_entity(model))
+        return HtmlRuleCreateUpdateResponseEntity.construct(ok=0,
+                                                            data=convert_model_to_html_rule_response_entity(model))
 
 
 def update_obj(rule_id: int, request: HtmlRuleRequestEntity):
@@ -57,7 +66,8 @@ def update_obj(rule_id: int, request: HtmlRuleRequestEntity):
         model.updated_at = datetime.datetime.now()
         session.merge(model)
         session.commit()
-        return HtmlRuleCreateUpdateResponseEntity.construct(ok=0, data=convert_model_to_html_rule_response_entity(model))
+        return HtmlRuleCreateUpdateResponseEntity.construct(ok=0,
+                                                            data=convert_model_to_html_rule_response_entity(model))
 
 
 def exist_by_name(session: SessionLocal, name: str):

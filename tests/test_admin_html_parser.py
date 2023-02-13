@@ -4,7 +4,8 @@ from pprint import pformat
 
 import requests
 
-from scraperx.utils.config import set_config_level_fmt
+from scraperx.utils.config import set_config_level_fmt, read_config_key
+from scraperx.utils.misc import get_project_path
 
 logger = logging.getLogger("test.parser")
 
@@ -13,13 +14,15 @@ class AdminHtmlParserTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.url = "http://127.0.0.1:9090/api/v1/admin/html_parser"
+        self.base_dir = get_project_path()
+        self.rules = read_config_key("rules", path="configs/rules.yaml")
         set_config_level_fmt()
 
     def test_create_rule_fail_missing(self):
         item = {
             "name": "baidu-search"
         }
-        self._create_task(item)
+        self._create_rule(item)
 
     def test_create_rule_success_or_dupelicated(self):
         item = {
@@ -30,9 +33,9 @@ class AdminHtmlParserTest(unittest.TestCase):
             "rules": [],
             "ttl": 60 * 60 * 24,
         }
-        self._create_task(item)
+        self._create_rule(item)
 
-    def _create_task(self, item: dict):
+    def _create_rule(self, item: dict):
         resp = requests.post(self.url, json=item)
         logger.info("response status: %d", resp.status_code)
         logger.info(pformat(resp.json()))
@@ -54,7 +57,10 @@ class AdminHtmlParserTest(unittest.TestCase):
             ],
             "ttl": 60 * 60 * 24,
         }
-        resp = requests.put(self.url + "/1", json=item)
+        self._update_rule(1, item)
+
+    def _update_rule(self, rule_id: int, item: dict):
+        resp = requests.put(self.url + "/%d" % rule_id, json=item)
         logger.info("response status: %d", resp.status_code)
         logger.info(pformat(resp.json()))
 
@@ -89,3 +95,18 @@ class AdminHtmlParserTest(unittest.TestCase):
             resp = requests.post(self.url + "/{}/toggle/20".format(task_id))
             logger.info("response status: %d", resp.status_code)
             logger.info(pformat(resp.json()))
+
+    def test_put_rules_batch(self):
+        rule_name_id_map = dict()
+        for page in range(1, 4):
+            resp = requests.get(self.url + "?page=%d" % page)
+            for item in resp.json()['data']:
+                rule_name_id_map[item['name']] = item['id']
+        logger.info(rule_name_id_map)
+        for rule in self.rules:
+            if rule_name_id_map.get(rule['name']):
+                logger.info("update rule: %s", rule)
+                self._update_rule(rule_name_id_map.get(rule['name']), rule)
+            else:
+                logger.info("create rule: %s", rule)
+                self._create_rule(rule)

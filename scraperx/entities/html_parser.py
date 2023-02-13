@@ -11,22 +11,12 @@ class HtmlRuleType:
 
 class HtmlRuleStatus:
     debug: int = 0
-    start: int = 10
-    stop: int = 20
+    ready: int = 10
+    pause: int = 20
 
     @staticmethod
     def is_legal(status: int) -> bool:
-        return HtmlRuleStatus.debug <= status <= HtmlRuleStatus.stop
-
-
-class HtmlParserRuleEntity(BaseModel):
-    name: str
-    domain: str
-    path: str
-    type: int
-    rules: list
-    created_at: datetime
-    updated_at: datetime
+        return HtmlRuleStatus.debug <= status <= HtmlRuleStatus.pause
 
 
 class HtmlRuleRequestEntity(BaseModel):
@@ -35,20 +25,15 @@ class HtmlRuleRequestEntity(BaseModel):
     domain: str
     path: str
     type: int
+    ttl: int
     rules: list
     status: int = HtmlRuleStatus.debug
-    ttl: int
+    created_at: datetime = None
+    updated_at: datetime = None
 
 
-class HtmlRuleResponseEntity(BaseModel):
+class HtmlRuleResponseEntity(HtmlRuleRequestEntity):
     id: int
-    name: str
-    domain: str
-    path: str
-    type: int
-    rules: list
-    status: int
-    ttl: int
     created_at: datetime
     updated_at: datetime
 

@@ -36,5 +36,5 @@ async def delete_task(task_id: int) -> TaskDeleteResponseEntity:
 @app.post("/{task_id}/toggle/{status}")
 async def toggle_task(task_id: int, status: int) -> TaskToggleResponseEntity:
     if not TaskStatus.is_legal(status):
-        return TaskToggleResponseEntity.construct(ok=1, message="ilegal status")
+        return TaskToggleResponseEntity.construct(ok=1, message="illegal status")
     return task_service.toggle_start_stop(task_id, status)

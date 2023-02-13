@@ -1,10 +1,12 @@
 import json
 from datetime import datetime
+from typing import List
 
 from scraperx.entities.html_parser import HtmlRuleResponseEntity, HtmlRuleRequestEntity
 from scraperx.entities.task import TaskResponseModel, TaskRequestEntity, TaskStatus
 from scraperx.model.html_parer import HtmlRuleModel
 from scraperx.model.task import TaskModel
+from scraperx.utils.parser_ml.feature import HtmlNode
 
 
 def convert_task_response_model(item: TaskModel) -> TaskResponseModel:
@@ -50,3 +52,20 @@ def convert_model_to_html_rule_response_entity(model: HtmlRuleModel) -> HtmlRule
         created_at=model.created_at
     )
     return entity
+
+
+def convert_html_node_to_data(node: HtmlNode) -> dict:
+    return node.dict()
+
+
+def convert_html_node_group_to_rule(label: int, nodes: List[HtmlNode]) -> HtmlRuleRequestEntity:
+    cssselectors = ",".join(set(map(str, nodes)))
+    return HtmlRuleRequestEntity.construct(
+        id=label,
+        name=cssselectors,
+        domain="*",
+        path="/",
+        type=0,
+        ttl=60 * 60 * 24,
+        rules=[],
+    )

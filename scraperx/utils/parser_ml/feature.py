@@ -48,10 +48,10 @@ class HtmlNode:
             tag=self.tag,
             class_name=self.class_name,
         )
-        d.update(self.attrib)
-        d.update(html=self.sel.xpath(".").extract_first())
+        for key, value in self.attrib.items():
+            d["attr_" + key] = value
         d.update(text=self.sel.xpath("string(.)").extract_first())
-
+        d['href'] = self.sel.css("a[href]::attr(href)").extract_first()
         return d
 
     def xpath_strim(self):
@@ -71,7 +71,7 @@ class HtmlNode:
         return any([self.has_ancestor(node) for node in nodes])
 
     def __str__(self):
-        return "%s.%s" % (self.tag, self.class_name)
+        return "%s.%s" % (self.tag, ".".join(self.class_name.split(" ")))
 
     __repr__ = __str__
 

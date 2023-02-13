@@ -37,7 +37,7 @@ class TestHtmlClustering(TestCase):
         for label, nodes in group.items():
             logging.info("label=%d " + "***" * 30, label, )
             for node in nodes:
-                logging.info(node.sel.xpath("string(.)").extract_first())
+                logging.info("node=%s, text: %s", node, node.sel.xpath("string()").extract())
         nx.draw(g, with_labels=True)
         fname = "%s.jpeg" % parse_url(self.url).host
         plt.savefig(fname)
