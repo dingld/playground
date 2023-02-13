@@ -1,13 +1,10 @@
 import logging
 import os
-import sqlite3
 from unittest import TestCase
-
-import pandas as pd
 
 import tests
 from scraperx.utils.config import set_config_level_fmt
-from scraperx.utils.misc import get_project_path
+from scraperx.utils.parser_sqlite3 import init_sqlite3_conn, init_sqlite3_source, query_sqlite3_parser
 
 logger = logging.getLogger("parser.html.sqlite3")
 
@@ -16,31 +13,66 @@ class TestSqliteHtmlExtension(TestCase):
 
     def setUp(self) -> None:
         set_config_level_fmt()
-        self.conn = sqlite3.connect(':memory:')
-        self.conn.enable_load_extension(True)
-        self.conn.load_extension(os.path.join(get_project_path(), "extensions/sqlite3/html0"))
-        self.url = "https://www.google.com"
-        self.path = "resource/google-search.html"
+        self.conn = init_sqlite3_conn()
         self.base_dir = os.path.dirname(tests.__file__)
-        self.index_file = os.path.join(self.base_dir, self.path)
-        with open(self.index_file) as fp:
-            df = pd.DataFrame([{"source": fp.read()}])
-            df['base_url'] = self.url
-            df.to_sql("response", con=self.conn)
 
     def tearDown(self) -> None:
-        self.conn.close()
+        sql = "select base_url, created_at from response"
+        for item in query_sqlite3_parser(self.conn, sql):
+            logger.info(item)
 
-    def test_sqlite_from_html(self):
+    def _init_with_html(self, path: str, url: str):
+        with open(os.path.join(self.base_dir, path)) as fp:
+            init_sqlite3_source(conn=self.conn, source=fp.read(), base_url=url)
+
+    def test_parse_twice(self):
+        self.test_html_parser_sqlite3_baidu()
+        self.test_html_parser_sqlite3_baidu()
+
+    def test_html_parser_sqlite3_google(self):
+        base_url = "https://www.google.com"
+        self._init_with_html("resource/google-search.html", base_url)
         sql = """
-        WITH A AS (SELECT node.* FROM response, html_each(source, 'a[class],b') AS node),
-            B AS (SELECT base_url, 
-                        html_attr_get(html, 'a[href^="/search"]', 'href') as link, 
-                        html_attr_get(html, 'a[href^="/search"]', 'class') as class, 
-                        text 
-                    FROM A, response)
+        WITH A AS (SELECT response.base_url, node.* 
+                    FROM response, html_each(response.source, '.MjjYud, .AaVjTc') AS node),
+            B AS (SELECT html_text(html, '.MUxGbd.wuQ4Ob.WZ8Tjf') as date, 
+                        html_text(html, 'h3') as title, 
+                        text,
+                        html_attr_get(html, 'a[class]', 'href') as link
+                    FROM A)
         SELECT * FROM B WHERE link is not null
-        """.format(self.index_file)
-        result = pd.read_sql(sql, con=self.conn).to_dict("records")
-        for item in result:
+        """.format(base_url)
+        for item in query_sqlite3_parser(self.conn, sql):
+            logger.info(item)
+
+    def test_html_parser_sqlite3_bing(self):
+        base_url = "https://cn.bing.com"
+        self._init_with_html("resource/bing-search.html", base_url)
+        sql = """
+        WITH A AS (SELECT response.base_url, node.* 
+                        FROM response, html_each(response.source, '.b_algo,.fl') AS node),
+            B AS (SELECT html_text(html, '.b_title') as title, 
+                        html_text(html, '.b_caption') as text,
+                        html_attr_get(html, 'a[class]', 'href') as link
+                    FROM A)
+        SELECT * FROM B WHERE link is not null
+        """.format(base_url)
+        for item in query_sqlite3_parser(self.conn, sql):
+            logger.info(item)
+
+    def test_html_parser_sqlite3_baidu(self):
+        base_url = "https://www.baidu.com"
+        self._init_with_html("resource/baidu-search.html", base_url)
+        sql = """
+        WITH A AS (SELECT response.base_url, node.* 
+                        FROM response, html_each(response.source, '.result.c-container') AS node),
+            B AS (SELECT html_text(html, 'h3') as title, 
+                        html_text(html, '.c-gap-top-small') as text,
+                        html_attr_get(html, 'h3 a[href]', 'href') as link
+                    FROM A)
+        SELECT * FROM B WHERE link is not null
+        """.format(base_url)
+        items = query_sqlite3_parser(self.conn, sql)
+        logger.info("parse items: %d", len(items))
+        for item in items:
             logger.info(item)

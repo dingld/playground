@@ -8,7 +8,7 @@ from httpx import AsyncClient
 
 from scraperx.entities.html_parser import HtmlRuleRequestEntity
 from scraperx.entities.html_scrape import HtmlScrapeResultEntity
-from scraperx.utils.parser_sqlite3 import get_sqlite3_parser, init_sqlite3_parser, query_sqlite3_parser
+from scraperx.utils.parser_sqlite3 import init_sqlite3_conn, init_sqlite3_source, query_sqlite3_parser
 
 
 async def download(url: str, method: str) -> str:
@@ -19,8 +19,8 @@ async def download(url: str, method: str) -> str:
 
 
 def scrape(html: str, url: str, rule: HtmlRuleRequestEntity):
-    conn = get_sqlite3_parser()
-    init_sqlite3_parser(conn, source=html, base_url=url)
+    conn = init_sqlite3_conn()
+    init_sqlite3_source(conn, source=html, base_url=url)
     data = []
     for sql in rule.rules:
         data.extend(query_sqlite3_parser(sql=sql, conn=conn))
