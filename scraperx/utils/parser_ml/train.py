@@ -39,7 +39,7 @@ def do_dbscan(vectors, eps: float = 0.5, min_samples: int = 3) -> DBSCAN:
     return clustering
 
 
-def build_graph(groups: Dict[int, List[HtmlNode]], context: dict):
+def build_cluster_graph(groups: Dict[int, List[HtmlNode]], context: dict):
     g = nx.DiGraph()
     color_map = {}
     graphs = []
@@ -48,8 +48,8 @@ def build_graph(groups: Dict[int, List[HtmlNode]], context: dict):
         cluster_group = HtmlClusterGraph(label, members)
         graphs.append(cluster_group)
         logger.debug("graph label=%d, depth=%d, member=%d, head=%-30s, full=%s", cluster_group.label,
-                    cluster_group.depth(), len(cluster_group.members),
-                    cluster_group.head(), cluster_group.head(True))
+                     cluster_group.depth(), len(cluster_group.members),
+                     cluster_group.head(), cluster_group.head(True))
 
     # depth reverse search ancestor
     graphs: List[HtmlClusterGraph] = sorted(graphs, key=lambda x: x.depth(), reverse=True)
@@ -58,7 +58,7 @@ def build_graph(groups: Dict[int, List[HtmlNode]], context: dict):
         current_g: HtmlClusterGraph = current_g
         logger.debug("*****" * 30)
         logger.debug("current graph label=%d, depth=%d, member=%d, head=%-30s, full=%s", current_g.label,
-                    current_g.depth(), len(current_g.members), current_g.head(), current_g.head(True))
+                     current_g.depth(), len(current_g.members), current_g.head(), current_g.head(True))
         if index == len(graphs) - 1:
             break
         for next_g in graphs[index + 1:]:
@@ -68,7 +68,7 @@ def build_graph(groups: Dict[int, List[HtmlNode]], context: dict):
             if current_g.subgraph_to(next_g):
                 g.add_edge(next_g.label, current_g.label)
                 logging.debug("add edge: %s -> %s,  depth=%d, head=%s", next_g.label, current_g.label, next_g.depth(),
-                             next_g.head())
+                              next_g.head())
                 subgraph_set.add(current_g.label)
                 break
 
@@ -79,8 +79,54 @@ def build_graph(groups: Dict[int, List[HtmlNode]], context: dict):
         g.add_node(current_g.label)
         context[current_g.label] = current_g.head()
         logging.debug("set as root label=%s, head=%s, depth=%d", current_g.label, current_g.head(),
-                     current_g.depth())
+                      current_g.depth())
     return g
+
+
+def build_node_graph(groups: Dict[int, List[HtmlNode]], context: dict):
+    G = nx.DiGraph()
+    color_map = {}
+    graphs = []
+    for label, members in groups.items():
+        color_map[label] = label
+        cluster_group = HtmlClusterGraph(label, members)
+        graphs.append(cluster_group)
+
+    # depth reverse search ancestor
+    graphs: List[HtmlClusterGraph] = sorted(graphs, key=lambda x: x.depth(), reverse=True)
+    subnode_set = set()
+    for index, current_g in enumerate(graphs):
+        current_g: HtmlClusterGraph = current_g
+        logger.debug("*****" * 30)
+        logger.debug("current graph label=%d, depth=%d, member=%d, head=%-30s, full=%s", current_g.label,
+                     current_g.depth(), len(current_g.members), current_g.head(), current_g.head(True))
+        if index == len(graphs) - 1:
+            break
+
+        for next_g in graphs[index + 1:]:
+            if current_g == next_g:
+                continue
+            next_g: HtmlClusterGraph = next_g
+            if current_g.subgraph_to(next_g):
+                for current_node_index, current_node in enumerate(current_g.members):
+                    for next_node_index, next_node in enumerate(next_g.members):
+                        if current_node.has_ancestor(next_node.html_element):
+                            u = "%d-%s" % (next_g.label, next_node_index)
+                            v = "%d-%s" % (current_g.label, current_node_index)
+                            G.add_edge(u, v)
+                            subnode_set.add(v)
+                break
+
+    for current_g in graphs:
+        for current_node_index, current_node in enumerate(current_g.members):
+            v = "%d-%s" % (current_g.label, current_node_index)
+            if v in subnode_set:
+                continue
+            context[current_node] = True
+            # context[v] = "%s[%d]" % (current_g.css_head(), current_node_index)
+            G.add_node(current_g.label)
+            logging.debug("set as root %s", current_node)
+    return G
 
 
 def pre_filter_by_group_size(nodes: List[HtmlNode], minimum=3) -> List[HtmlNode]:

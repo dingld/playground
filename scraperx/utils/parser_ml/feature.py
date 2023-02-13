@@ -124,6 +124,16 @@ class HtmlNode:
 
     __repr__ = __str__
 
+    def __eq__(self, other):
+
+        # Equality Comparison between two objects
+        return self.xpath() == other.xpath()
+
+    def __hash__(self):
+
+        # hash(custom_object)
+        return hash(self.xpath())
+
 
 class HtmlClusterGraph:
 

@@ -76,7 +76,7 @@ def parse_html_ml(html: str, url: str, css="*[class]", eps: float = 0.2,
             continue
         group.setdefault(label, []).append(node)
     ctx = dict()
-    train.build_graph(group, ctx)
+    train.build_cluster_graph(group, ctx)
     for label, items in group.items():
         if root and not ctx.get(label):
             continue

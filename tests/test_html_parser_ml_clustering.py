@@ -31,13 +31,40 @@ class TestHtmlClustering(TestCase):
     def tearDown(self) -> None:
         if not self.cluster:
             return
+        # self._draw_cluster_graph()
+        self._draw_node_graph()
+
+    def _draw_cluster_graph(self, ):
         group: Dict[int, List[HtmlNode]] = {}
         for index, label in enumerate(self.cluster.labels_):
             if label == -1:
                 continue
             group.setdefault(label, []).append(self.nodes[index])
         ctx = dict()
-        g = train.build_graph(group, ctx)
+        g = train.build_cluster_graph(group, ctx)
+        logging.info("graph count: %d " + "***" * 30, len(g))
+        for label, nodes in group.items():
+            logging.info("label=%d " + "***" * 30, label, )
+            for node in nodes:
+                logging.info("node=%s, text: %s", node, node.sel.xpath("string()").extract())
+        g = relabel_nodes(g, mapping=ctx)
+
+        nx.draw(g, nx_pydot.graphviz_layout(g, "dot"), with_labels=True)
+
+        plt.show()
+
+        logging.info("is forest %s", recognition.is_forest(g))
+        logging.info("is tree %s", recognition.is_tree(g))
+        logging.info("root node->%s", ctx)
+
+    def _draw_node_graph(self):
+        group: Dict[int, List[HtmlNode]] = {}
+        for index, label in enumerate(self.cluster.labels_):
+            if label == -1:
+                continue
+            group.setdefault(label, []).append(self.nodes[index])
+        ctx = dict()
+        g = train.build_node_graph(group, ctx)
         logging.info("graph count: %d " + "***" * 30, len(g))
         for label, nodes in group.items():
             logging.info("label=%d " + "***" * 30, label, )
