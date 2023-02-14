@@ -39,7 +39,7 @@ class HtmlScrapeEndpointTest(unittest.TestCase):
             logger.info(item)
 
     def test_baidu_search_parse(self):
-        with open(os.path.join(self.base_dir, "resource/baidu-search.html")) as fp:
+        with open(os.path.join(self.base_dir, "../configs/source/baidu-search.html")) as fp:
             html = fp.read()
         rule = {
             "name": "baidu-search",
@@ -68,7 +68,7 @@ class HtmlScrapeEndpointTest(unittest.TestCase):
 
 
     def test_baidu_search_parse_ml(self):
-        with open(os.path.join(self.base_dir, "resource/baidu-search.html")) as fp:
+        with open(os.path.join(self.base_dir, "../configs/source/baidu-search.html")) as fp:
             html = fp.read()
         data = {
             "html": html,
@@ -78,7 +78,7 @@ class HtmlScrapeEndpointTest(unittest.TestCase):
         logger.info(pformat(resp.json()))
 
     def test_baidu_search_parse_factory(self):
-        with open(os.path.join(self.base_dir, "resource/baidu-search.html")) as fp:
+        with open(os.path.join(self.base_dir, "../configs/source/baidu-search.html")) as fp:
             html = fp.read()
 
         data = {

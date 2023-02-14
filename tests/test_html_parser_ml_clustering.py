@@ -31,7 +31,7 @@ class TestHtmlClustering(TestCase):
     def tearDown(self) -> None:
         if not self.cluster:
             return
-        # self._draw_cluster_graph()
+        self._draw_cluster_graph()
         self._draw_node_graph()
 
     def _draw_cluster_graph(self, ):
@@ -83,7 +83,7 @@ class TestHtmlClustering(TestCase):
     def test_google_search_html_parser(self):
 
         self.url = url = "https://www.google.com"
-        self.path = path = "resource/google-search.html"
+        self.path = path = "../configs/source/google-search.html"
         with open(os.path.join(self.base_dir, path)) as fp:
             self.nodes = train.parse_as_nodes(fp.read(), url, css="*[class]")
             self.cluster = train.do_dbscan(train.nodes_as_array(self.nodes), eps=0.2)
@@ -91,14 +91,14 @@ class TestHtmlClustering(TestCase):
     def test_baidu_search_html_parser(self):
 
         self.url = url = "https://www.baidu.com"
-        self.path = path = "resource/baidu-search.html"
+        self.path = path = "../configs/source/baidu-search.html"
         with open(os.path.join(self.base_dir, path)) as fp:
             self.nodes = train.parse_as_nodes(fp.read(), url, css="*[class]")
             self.cluster = train.do_dbscan(train.nodes_as_array(self.nodes), eps=0.2)
 
     def test_bing_search_html_parser(self):
         self.url = url = "https://www.bing.com"
-        self.path = path = "resource/bing-search.html"
+        self.path = path = "../configs/source/bing-search.html"
         with open(os.path.join(self.base_dir, path)) as fp:
             self.nodes = train.parse_as_nodes(fp.read(), url, css="*[class]")
             self.cluster = train.do_dbscan(train.nodes_as_array(self.nodes), eps=0.2)

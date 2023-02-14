@@ -31,7 +31,7 @@ class TestSqliteHtmlExtension(TestCase):
 
     def test_html_parser_sqlite3_google(self):
         base_url = "https://www.google.com"
-        self._init_with_html("resource/google-search.html", base_url)
+        self._init_with_html("../configs/source/google-search.html", base_url)
         sql = """
         WITH A AS (SELECT response.base_url, node.* 
                     FROM response, html_each(response.source, '.MjjYud, .AaVjTc') AS node),
@@ -47,7 +47,7 @@ class TestSqliteHtmlExtension(TestCase):
 
     def test_html_parser_sqlite3_bing(self):
         base_url = "https://cn.bing.com"
-        self._init_with_html("resource/bing-search.html", base_url)
+        self._init_with_html("../configs/source/bing-search.html", base_url)
         sql = """
         WITH A AS (SELECT response.base_url, node.* 
                         FROM response, html_each(response.source, '.b_algo,.fl') AS node),
@@ -62,7 +62,7 @@ class TestSqliteHtmlExtension(TestCase):
 
     def test_html_parser_sqlite3_baidu(self):
         base_url = "https://www.baidu.com"
-        self._init_with_html("resource/baidu-search.html", base_url)
+        self._init_with_html("../configs/source/baidu-search.html", base_url)
         sql = """
         WITH A AS (SELECT response.base_url, node.* 
                         FROM response, html_each(response.source, '.result.c-container') AS node),
