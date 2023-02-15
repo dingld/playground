@@ -54,7 +54,7 @@ class HtmlNode:
             if isinstance(key, str):
                 new_key = re.sub("[\d]{2,}", "+escape_numbers", key)
                 if new_key != key:
-                    logging.debug("esacpe key %s: %s -> %s", key, new_key, new_value)
+                    logging.debug("esacpe key %s -> %s", key, new_key)
                     item[new_key] = item.pop(key)
         return item
 

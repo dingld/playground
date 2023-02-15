@@ -9,7 +9,7 @@ from networkx.algorithms.tree import recognition
 from networkx.drawing import nx_pydot
 from networkx.relabel import relabel_nodes
 
-import tests
+from scraperx.utils.misc import get_project_path
 from scraperx.utils.parser_ml import train
 from scraperx.utils.parser_ml.feature import (HtmlNode)
 
@@ -21,20 +21,22 @@ logging.basicConfig(
 class TestHtmlClustering(TestCase):
 
     def setUp(self) -> None:
-        self.base_dir = os.path.dirname(tests.__file__)
+        self.base_dir = os.path.join(get_project_path(), "configs/source")
         self.nodes: List[HtmlNode] = []
         self.cluster = None
-        self.path = ""
-        self.url = ""
+        self.filepaths = []
+        self.current_file = ""
+        for root, dirs, files in os.walk(self.base_dir):
+            for filename in files:
+                if not filename.endswith(".html"):
+                    continue
+                self.filepaths.append(os.path.join(root, filename))
         os.chdir(self.base_dir)
 
     def tearDown(self) -> None:
-        if not self.cluster:
-            return
-        self._draw_cluster_graph()
-        self._draw_node_graph()
+        logging.info("test done")
 
-    def _draw_cluster_graph(self, ):
+    def _draw_cluster_graph(self):
         group: Dict[int, List[HtmlNode]] = {}
         for index, label in enumerate(self.cluster.labels_):
             if label == -1:
@@ -51,8 +53,7 @@ class TestHtmlClustering(TestCase):
 
         nx.draw(g, nx_pydot.graphviz_layout(g, "dot"), with_labels=True)
 
-        plt.show()
-
+        plt.savefig(self.current_file + "-cluster.png")
         logging.info("is forest %s", recognition.is_forest(g))
         logging.info("is tree %s", recognition.is_tree(g))
         logging.info("root node->%s", ctx)
@@ -74,31 +75,42 @@ class TestHtmlClustering(TestCase):
 
         nx.draw(g, nx_pydot.graphviz_layout(g, "dot"), with_labels=True)
 
-        plt.show()
+        plt.savefig(self.current_file + "-node.png")
 
         logging.info("is forest %s", recognition.is_forest(g))
         logging.info("is tree %s", recognition.is_tree(g))
         logging.info("root node->%s", ctx)
 
+    def _parse_ml(self, html: str, url: str):
+        self.nodes = train.parse_as_nodes(html, url, css="*[class]")
+        self.cluster = train.do_dbscan(train.nodes_as_array(self.nodes), eps=0.2)
+        self._draw_cluster_graph()
+        self._draw_node_graph()
+
     def test_google_search_html_parser(self):
 
         self.url = url = "https://www.google.com"
-        self.path = path = "../configs/source/google-search.html"
-        with open(os.path.join(self.base_dir, path)) as fp:
-            self.nodes = train.parse_as_nodes(fp.read(), url, css="*[class]")
-            self.cluster = train.do_dbscan(train.nodes_as_array(self.nodes), eps=0.2)
+        self.current_file = path = "google-search.html"
+        with open(path) as fp:
+            self._parse_ml(fp.read(), url)
 
     def test_baidu_search_html_parser(self):
 
         self.url = url = "https://www.baidu.com"
-        self.path = path = "../configs/source/baidu-search.html"
+        self.current_file = path = "baidu-search.html"
         with open(os.path.join(self.base_dir, path)) as fp:
-            self.nodes = train.parse_as_nodes(fp.read(), url, css="*[class]")
-            self.cluster = train.do_dbscan(train.nodes_as_array(self.nodes), eps=0.2)
+            self._parse_ml(fp.read(), url)
 
     def test_bing_search_html_parser(self):
         self.url = url = "https://www.bing.com"
-        self.path = path = "../configs/source/bing-search.html"
-        with open(os.path.join(self.base_dir, path)) as fp:
-            self.nodes = train.parse_as_nodes(fp.read(), url, css="*[class]")
-            self.cluster = train.do_dbscan(train.nodes_as_array(self.nodes), eps=0.2)
+        self.current_file = path = "bing-search.html"
+        with open(path) as fp:
+            self._parse_ml(fp.read(), url)
+
+    def test_html_parser_ml_node(self):
+        self.url = url = "https://www.bing.com"
+        for filename in self.filepaths:
+            with open(filename) as fp:
+                self.current_file = filename
+                self._parse_ml(fp.read(), url)
+                break

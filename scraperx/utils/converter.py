@@ -66,7 +66,7 @@ def convert_html_node_group_to_rule(label: int, nodes: List[HtmlNode], url: str)
         id=label,
         name=g.css_head(),
         domain=urlpart.netloc,
-        path=urlpart.path,
+        path=urlpart.current_file,
         type=0,
         ttl=60 * 60 * 24,
         rules=[],

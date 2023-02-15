@@ -37,6 +37,12 @@ def query_sqlite3_parser(conn: Connection, sql) -> List[dict]:
     return df.to_dict("records")
 
 
+def query_sqlite3_as_df(conn: Connection, sql) -> pd.DataFrame:
+    df = pd.read_sql(sql=sql, con=conn)
+    return df
+
+
 def clear_sqlite3_parser(conn: Connection, base_url: str, seconds: int = 60):
-    conn.execute("delete from response where created_at < {0} or base_url = '{1}'".format(int(time() - seconds), base_url))
+    conn.execute(
+        "delete from response where created_at < {0} or base_url = '{1}'".format(int(time() - seconds), base_url))
     conn.commit()

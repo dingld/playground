@@ -29,7 +29,11 @@ def parse_as_nodes(html: str, url, minimum: int = 5, css: str = "*[class]",
 
 def nodes_as_array(nodes: List[HtmlNode]):
     rows = list(map(lambda x: x.row(), nodes))
-    vectors = OneHotEncoder(sparse=True).fit_transform(pd.DataFrame(rows))
+    return array_as_onehot_sparse(pd.DataFrame(rows))
+
+
+def array_as_onehot_sparse(df: pd.DataFrame):
+    vectors = OneHotEncoder(sparse=True).fit_transform(df)
     return vectors
 
 
