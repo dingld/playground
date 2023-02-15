@@ -1,0 +1,4 @@
+dao.session.sqlalchemy: "sqlite:///scraperx.db"
+
+log.level: INFO
+log.fmt: "%(asctime)s [%(name)s] %(levelname)s: %(message)s"

@@ -40,9 +40,8 @@ async def download_and_parse(url: str) -> List[HtmlScrapeResultEntity]:
 
 
 @app.get("/html_and_ml")
-async def download_and_ml(url: str, eps: float = 0.2, css: str = "*[class]", root: bool = False, href: bool = True) -> \
-List[
-    HtmlScrapeResultEntity]:
+async def download_and_ml(url: str, eps: float = 0.2, css: str = "*[class]",
+                          root: bool = False, href: bool = True) -> List[HtmlScrapeResultEntity]:
     html = await scrape_service.download_html(url)
     return scrape_service.parse_html_ml(html, url, eps=eps, css=css, root=root, href=href)
 
