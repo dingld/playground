@@ -1,7 +1,9 @@
 import uvicorn
 from fastapi import FastAPI
 
-from scraperx.controller import tasks, html_parser, scrape_endpoint
+from scraperx.api import scrape_endpoint
+from scraperx.api import html_parser
+from scraperx.api import tasks
 from scraperx.dao import session
 from scraperx.utils.config import read_config_key, set_config_level_fmt
 

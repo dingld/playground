@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 
 from scraperx.entities.task import TaskListResponseEntity, TaskCreateUpdateResponseEntity, TaskDeleteResponseEntity, \
-    TaskToggleResponseEntity
-from scraperx.entities.task import TaskRequestEntity, TaskStatus, TaskSingleResponseEntity
+    TaskToggleResponseEntity, TaskRequestEntity, TaskStatus, TaskSingleResponseEntity
 from scraperx.service import task_service
 
 app = FastAPI()

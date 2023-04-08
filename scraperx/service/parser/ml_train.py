@@ -8,9 +8,9 @@ from parsel import Selector
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import OneHotEncoder
 
-from scraperx.utils.parser_ml.feature import (HtmlNode, HtmlClusterGraph)
+from scraperx.service.extractor.parser_ml.feature import (HtmlNode, HtmlClusterGraph)
 
-logger = logging.getLogger("parser_ml.html")
+logger = logging.getLogger("ml_core.html")
 
 
 def parse_as_nodes(html: str, url, minimum: int = 5, css: str = "*[class]",

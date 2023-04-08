@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 
 from scraperx.utils.config import read_config_key
 
-SQLALCHEMY_DATABASE_URL_DEFAULT = read_config_key("dao.session.sqlalchemy")
+SQLALCHEMY_DATABASE_URL_DEFAULT = read_config_key("dao.dao.sqlalchemy")
 
 SessionLocal: sessionmaker = sessionmaker(autocommit=False, autoflush=False)
 
@@ -19,7 +19,6 @@ def bind_url(url: str = ""):
 
 if __name__ == "__main__":
     from scraperx.model.item import *
-    from scraperx.model.link import *
     from scraperx.model.task import *
     from scraperx.model.html_parer import *
     from scraperx.model.base import DeclarativeBase

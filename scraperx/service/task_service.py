@@ -7,7 +7,7 @@ from scraperx.dao.session import SessionLocal
 from scraperx.entities.task import TaskListResponseEntity, TaskCreateUpdateResponseEntity, TaskDeleteResponseEntity, \
     TaskToggleResponseEntity, TaskRequestEntity, TaskSingleResponseEntity
 from scraperx.model.task import TaskModel
-from scraperx.utils.converter import convert_task_response_model, convert_task_resquest_model
+from scraperx.utils.converter import convert_task_model_to_response, convert_task_request_model
 
 
 def get_by_id(task_id: int) -> TaskSingleResponseEntity:
@@ -16,7 +16,7 @@ def get_by_id(task_id: int) -> TaskSingleResponseEntity:
     if not item:
         return TaskSingleResponseEntity.construct(ok=1)
 
-    return TaskSingleResponseEntity.construct(ok=0, data=convert_task_response_model(item))
+    return TaskSingleResponseEntity.construct(ok=0, data=convert_task_model_to_response(item))
 
 
 def list_by_page_size(page: int, size: int) -> TaskListResponseEntity:
@@ -25,19 +25,19 @@ def list_by_page_size(page: int, size: int) -> TaskListResponseEntity:
     query = session.query(TaskModel).limit(size)
     if page > 1:
         query = query.offset(page * size - size)
-    data = list(map(convert_task_response_model, query.all()))
+    data = list(map(convert_task_model_to_response, query.all()))
     return TaskListResponseEntity.construct(total=total, page=page, size=size, data=data)
 
 
 def create_obj(request: TaskRequestEntity) -> TaskCreateUpdateResponseEntity:
-    model = convert_task_resquest_model(request)
+    model = convert_task_request_model(request)
     with SessionLocal() as session:
         if session.query(TaskModel).filter_by(name=request.name).count():
             return TaskCreateUpdateResponseEntity.construct(ok=1, message="task already exists")
         model.created_at = model.updated_at
         session.add(model)
         session.commit()
-        return TaskCreateUpdateResponseEntity.construct(ok=0, data=convert_task_response_model(model))
+        return TaskCreateUpdateResponseEntity.construct(ok=0, data=convert_task_model_to_response(model))
 
 
 def update_obj(task_id: int, request: TaskRequestEntity) -> TaskCreateUpdateResponseEntity:
@@ -54,7 +54,7 @@ def update_obj(task_id: int, request: TaskRequestEntity) -> TaskCreateUpdateResp
         model.updated_at = datetime.datetime.now()
         session.merge(model)
         session.commit()
-        return TaskCreateUpdateResponseEntity.construct(ok=0, data=convert_task_response_model(model))
+        return TaskCreateUpdateResponseEntity.construct(ok=0, data=convert_task_model_to_response(model))
 
 
 def exist_by_name(session: SessionLocal, name: str) -> bool:
@@ -79,4 +79,4 @@ def toggle_start_stop(task_id: int, status: int) -> TaskToggleResponseEntity:
         obj.status = status
         session.merge(obj)
         session.commit()
-        return TaskToggleResponseEntity.construct(ok=0, data=convert_task_response_model(obj))
+        return TaskToggleResponseEntity.construct(ok=0, data=convert_task_model_to_response(obj))
