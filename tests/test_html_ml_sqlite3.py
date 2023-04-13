@@ -42,7 +42,7 @@ class TestMLSqliteExtension(TestCase):
         base_url = "https://cn.bing.com"
         self._init_with_html("../configs/source/bing-search.html", base_url)
         sql = """
-        WITH A AS (SELECT node.rowid, tag, class, depth, css, xpath
+        WITH A AS (SELECT node.rowid, tag, class, depth, css, xpath, attrib
 
                         FROM response, html_each(response.source, '*[class]') AS node)
         SELECT * FROM A
@@ -56,7 +56,7 @@ class TestMLSqliteExtension(TestCase):
         base_url = "https://cn.bing.com"
         self._init_with_html("../configs/source/bing-search.html", base_url)
         sql = """
-        WITH A AS (SELECT node.rowid, tag, class, depth, css, xpath
+        WITH A AS (SELECT node.rowid, tag, class, depth, css, xpath, attrib
 
                         FROM response, html_each(response.source, '*[class]') AS node 
                     WHERE class IS NOT NULL)
@@ -69,7 +69,6 @@ class TestMLSqliteExtension(TestCase):
 
 
     def test_ml_sqlit3_feature(self):
-        self.conn.create_aggregate()
         df = self.test_extract_feature()
         feature = df[
             "tag,class,depth,css,xpath".split(",")
