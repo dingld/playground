@@ -17,7 +17,11 @@ def read_config_all(path: str = "", suffix: str = ".yaml") -> dict:
             for filename in files:
                 if not filename.endswith(suffix):
                     continue
-                paths.append(os.path.join(root, filename))
+                filepath = os.path.join(root, filename)
+                if filename == "default.yaml":
+                    paths = [filepath] + path
+                else:
+                    paths.append(filepath)
     configs = dict()
     for filepath in paths:
         configs.update(read_single_config(filepath))
