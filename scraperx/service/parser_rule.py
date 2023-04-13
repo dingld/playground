@@ -21,7 +21,6 @@ def get_by_id(rule_id: int) -> HtmlRuleSingleResponseEntity:
 
 def get_all() -> List[HtmlRuleResponseEntity]:
     session = SessionLocal()
-    # items = session.query(HtmlRuleModel).filter_by(status=HtmlRuleStatus.ready).all()
     items = session.query(HtmlRuleModel).all()
     return list(map(convert_model_to_html_rule_response_entity, items))
 
