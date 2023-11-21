@@ -1,15 +1,16 @@
 import json
 from datetime import datetime
 from typing import List
+
 from urllib3.util import parse_url
 
-from scraperx.entities.html_parser import HtmlRuleResponseEntity, HtmlRuleRequestEntity
-from scraperx.entities.task import TaskResponseModel, TaskRequestEntity, TaskStatus
-from scraperx.model.html_parer import HtmlRuleModel
-from scraperx.model.task import TaskModel
-from scraperx.service.parser.ml_feature import HtmlNode, HtmlClusterGraph
 from scraperx.entities.link import LinkRequestEntity, LinkResponseEntity
+from scraperx.entities.rule import HtmlRuleResponseEntity, HtmlRuleRequestEntity
+from scraperx.entities.task import TaskResponseModel, TaskRequestEntity, TaskStatus
 from scraperx.model.link import LinkModel
+from scraperx.model.rule import HtmlRuleModel
+from scraperx.model.task import TaskModel
+from scraperx.service.parser._cluster import HtmlNode, HtmlClusterGraph
 
 
 def convert_link_request_to_model(request: LinkRequestEntity) -> LinkModel:
@@ -19,6 +20,7 @@ def convert_link_request_to_model(request: LinkRequestEntity) -> LinkModel:
     model.domain = request.domain
     model.url = request.url
     return model
+
 
 def convert_link_response_to_model(response: LinkResponseEntity) -> LinkModel:
     model = LinkModel()
@@ -41,9 +43,9 @@ def convert_link_model_to_response(item: LinkModel) -> LinkResponseEntity:
     return LinkResponseEntity.construct(id=item.id, task_id=item.task_id, fingerprint=item.fingerprint,
                                         domain=item.domain, url=item.url, response_body_size=item.response_body_size,
                                         status_code=item.status_code, retry=item.retry, error=item.error,
-                                        created_at=item.created_at, updated_at=item.updated_at, fetched_at=item.fetched_at
+                                        created_at=item.created_at, updated_at=item.updated_at,
+                                        fetched_at=item.fetched_at
                                         )
-
 
 
 def convert_task_model_to_response(item: TaskModel) -> TaskResponseModel:

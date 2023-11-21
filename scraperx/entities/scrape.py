@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from scraperx.entities.html_parser import HtmlRuleRequestEntity
+from scraperx.entities.rule import HtmlRuleRequestEntity
 
 
 class HtmlScrapeParseRequestEntity(BaseModel):

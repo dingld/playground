@@ -10,8 +10,8 @@ from networkx.drawing import nx_pydot
 from networkx.relabel import relabel_nodes
 
 from scraperx.utils.misc import get_project_path
-from scraperx.service.parser import ml_train as train
-from scraperx.service.parser.ml_feature import HtmlNode
+from scraperx.service.parser import _cluster as train
+from scraperx.service.parser.cluster import HtmlNode
 
 logging.basicConfig(
     level=logging.INFO, format='%(asctime)s [%(name)s] %(levelname)s: %(message)s'

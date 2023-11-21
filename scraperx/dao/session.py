@@ -3,14 +3,10 @@ from sqlalchemy.orm import sessionmaker
 
 from scraperx.utils.config import read_config_key
 
-SQLALCHEMY_DATABASE_URL_DEFAULT = read_config_key("dao.dao.sqlalchemy")
-
 SessionLocal: sessionmaker = sessionmaker(autocommit=False, autoflush=False)
 
 
-def bind_url(url: str = ""):
-    if not url:
-        url = SQLALCHEMY_DATABASE_URL_DEFAULT
+def bind_url(url: str):
     engine = create_engine(
         url
     )
@@ -18,9 +14,10 @@ def bind_url(url: str = ""):
 
 
 if __name__ == "__main__":
+    SQLALCHEMY_DATABASE_URL_DEFAULT = read_config_key("dao.session.sqlalchemy")
     from scraperx.model.item import *
     from scraperx.model.task import *
-    from scraperx.model.html_parer import *
+    from scraperx.model.rule import *
     from scraperx.model.base import DeclarativeBase
 
     print("sqlalchemy path: %s" % SQLALCHEMY_DATABASE_URL_DEFAULT)

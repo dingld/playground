@@ -4,9 +4,9 @@ from typing import List
 import urllib3.util
 from urllib3.util.url import Url
 
-from scraperx.entities.html_parser import HtmlRuleRequestEntity
-from scraperx.entities.html_scrape import HtmlScrapeResultEntity
-from scraperx.service.parser_rule import get_all
+from scraperx.entities.rule import HtmlRuleRequestEntity
+from scraperx.entities.scrape import HtmlScrapeResultEntity
+from scraperx.service.rule import get_all
 from scraperx.utils.parser_sqlite3 import init_sqlite3_conn, init_sqlite3_source, query_sqlite3_parser
 
 logger = logging.getLogger(__name__)

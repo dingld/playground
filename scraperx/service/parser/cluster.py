@@ -3,10 +3,10 @@ import math
 import re
 from typing import List, Dict
 
-from scraperx.entities.html_scrape import HtmlScrapeResultEntity
+from scraperx.entities.scrape import HtmlScrapeResultEntity
+from scraperx.service.parser import _cluster as train
 from scraperx.utils.converter import convert_html_node_to_data, convert_html_node_group_to_rule
-from scraperx.service.parser import ml_train as train
-from scraperx.service.parser.ml_feature import HtmlNode
+from ._cluster import HtmlNode
 
 logger = logging.getLogger(__name__)
 

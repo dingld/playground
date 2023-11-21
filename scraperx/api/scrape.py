@@ -3,11 +3,11 @@ from typing import List
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from scraperx.entities.html_scrape import HtmlScrapeParseRequestEntity, HtmlScrapeResultEntity, \
+from scraperx.entities.scrape import HtmlScrapeParseRequestEntity, HtmlScrapeResultEntity, \
     HtmlScrapeParseFactoryRequestEntity
 from scraperx.service import downloader
 from scraperx.service.parser.sql import parse_html_with_rules, parse_html_with_rule
-from scraperx.service.parser.ml import parse_html_ml
+from scraperx.service.parser.cluster import parse_html_ml
 
 app = FastAPI()
 

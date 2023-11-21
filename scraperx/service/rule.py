@@ -3,10 +3,10 @@ import json
 from typing import List
 
 from scraperx.dao.session import SessionLocal
-from scraperx.entities.html_parser import HtmlRuleRequestEntity, HtmlRuleListResponseEntity, \
+from scraperx.entities.rule import HtmlRuleRequestEntity, HtmlRuleListResponseEntity, \
     HtmlRuleSingleResponseEntity, HtmlRuleCreateUpdateResponseEntity, HtmlRuleDeleteResponseEntity, \
     HtmlRuleToggleResponseEntity, HtmlRuleStatus, HtmlRuleResponseEntity
-from scraperx.model.html_parer import HtmlRuleModel
+from scraperx.model.rule import HtmlRuleModel
 from scraperx.utils.converter import convert_request_to_html_rule_model, convert_model_to_html_rule_response_entity
 
 

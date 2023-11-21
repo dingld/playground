@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from sqlalchemy import DateTime
+from datetime import datetime
 from typing import List
 
 
@@ -28,9 +28,9 @@ class LinkResponseEntity(BaseModel):
     status_code: int
     retry: int
     error: str
-    created_at: DateTime
-    updated_at: DateTime
-    fetched_at: DateTime
+    created_at: datetime
+    updated_at: datetime
+    fetched_at: datetime
 
 
 class LinkSingleResponseEntity(BaseModel):

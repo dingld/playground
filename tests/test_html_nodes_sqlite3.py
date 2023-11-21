@@ -5,7 +5,7 @@ from typing import Dict
 import tests
 from scraperx.utils.config import set_config_level_fmt
 from scraperx.utils.parser_sqlite3 import init_sqlite3_conn, init_sqlite3_source, query_sqlite3_as_df
-from scraperx.service.parser import ml_train as train
+from scraperx.service.parser import _cluster as train
 
 
 logger = logging.getLogger("html.ml.sqlite3")

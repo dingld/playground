@@ -10,13 +10,25 @@ from scraperx.utils.misc import get_project_path
 logger = logging.getLogger("test.parser")
 
 
-class AdminHtmlParserTest(unittest.TestCase):
-
+class AdminHtmlRuleTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.url = "http://127.0.0.1:9090/api/v1/admin/html_parser"
+        self.url = "http://127.0.0.1:9090/api/v1/admin/rule"
         self.base_dir = get_project_path()
-        self.rules = read_config_key("rules", path="configs/rules.yaml")
+        self.rules = read_config_key("rules")
         set_config_level_fmt()
+
+
+class AdminHtmlParserTest(AdminHtmlRuleTest):
+
+    def test_load_all_rules_default(self):
+        for rule in self.rules:
+            self._create_rule(rule)
+
+    def test_list_rules(self):
+        for page in range(1, 4):
+            resp = requests.get(self.url + "?page=%d" % page)
+            for item in resp.json()['data']:
+                logger.info(item)
 
     def test_create_rule_fail_missing(self):
         item = {
@@ -24,7 +36,7 @@ class AdminHtmlParserTest(unittest.TestCase):
         }
         self._create_rule(item)
 
-    def test_create_rule_success_or_dupelicated(self):
+    def test_create_rule_success_or_duplicated(self):
         item = {
             "name": "baidu-search",
             "domain": "www.baidu.com",
@@ -78,11 +90,6 @@ class AdminHtmlParserTest(unittest.TestCase):
         resp = requests.put(self.url + "/10086", json=item)
         logger.info("response status: %d", resp.status_code)
         logger.info(pformat(resp.json()))
-
-    def test_list_rules(self):
-        for page in range(1, 4):
-            resp = requests.get(self.url + "?page=%d" % page)
-            logger.info(resp.json())
 
     def test_start_rule_success(self):
         for task_id in [1, 10086]:
