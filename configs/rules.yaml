@@ -1,0 +1,43 @@
+rules:
+  - name: baidu-search
+    domain: www.baidu.com
+    path: /s
+    type: 10
+    rules:
+      - WITH A AS (SELECT response.base_url, node.*
+        FROM response, html_each(response.source, '.result.c-container') AS node),
+        B AS (SELECT html_text(html, 'h3') as title,
+        html_text(html, '.c-gap-top-small') as text,
+        html_attr_get(html, 'h3 a[href]', 'href') as link
+        FROM A)
+        SELECT * FROM B WHERE link is not null
+    ttl: 86400
+
+  - name: bing-search
+    domain: .bing.com
+    path: /search
+    type: 10
+    rules:
+      - WITH A AS (SELECT response.base_url, node.*
+        FROM response, html_each(response.source, '.b_algo,.fl') AS node),
+        B AS (SELECT html_text(html, '.b_title') as title,
+        html_text(html, '.b_caption') as text,
+        html_attr_get(html, 'a[class]', 'href') as link
+        FROM A)
+        SELECT * FROM B WHERE link is not null
+    ttl: 86400
+
+  - name: google-search
+    domain: .google.com
+    path: /search
+    type: 10
+    rules:
+      - WITH A AS (SELECT response.base_url, node.*
+        FROM response, html_each(response.source, '.MjjYud, .AaVjTc') AS node),
+        B AS (SELECT html_text(html, '.MUxGbd.wuQ4Ob.WZ8Tjf') as date,
+        html_text(html, 'h3') as title,
+        text,
+        html_attr_get(html, 'a[class]', 'href') as link
+        FROM A)
+        SELECT * FROM B WHERE link is not null
+    ttl: 86400
