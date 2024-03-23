@@ -28,6 +28,7 @@ class HtmlRuleRequestEntity(BaseModel):
     ttl: int
     rules: list
     status: int = HtmlRuleStatus.debug
+    html: str = ""
     created_at: datetime = None
     updated_at: datetime = None
 

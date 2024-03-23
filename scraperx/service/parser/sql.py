@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import List
 
 import urllib3.util
@@ -23,9 +24,9 @@ def parse_html_with_rule(html: str, url: str, rule: HtmlRuleRequestEntity) -> Ht
 
 def parse_html_with_rules(html: str, url: str) -> List[HtmlScrapeResultEntity]:
     url_part: Url = urllib3.util.parse_url(url)
-    logger.info("scrape url netloc=%s, path=%s", url_part.netloc, url_part.path)
+    logger.info("scrape url netloc=%s, uri=%s", url_part.netloc, url_part.request_uri)
     items = []
     for rule in get_all():
-        if rule.domain in url_part.netloc and rule.path in url_part.path:
+        if re.match(rule.domain, url_part.netloc) and re.match(rule.path, url_part.request_uri):
             items.append(parse_html_with_rule(html, url, rule))
     return items

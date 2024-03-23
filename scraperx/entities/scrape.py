@@ -15,6 +15,8 @@ class HtmlScrapeResultEntity(BaseModel):
     url: str
     rule: HtmlRuleRequestEntity
     data: List[dict]
+    status: int = 0
+    msg: str = "ok"
 
 
 class HtmlScrapeParseFactoryRequestEntity(BaseModel):

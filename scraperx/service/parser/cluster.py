@@ -1,18 +1,18 @@
 import logging
 import math
-import re
 from typing import List, Dict
 
 from scraperx.entities.scrape import HtmlScrapeResultEntity
 from scraperx.service.parser import _cluster as train
 from scraperx.utils.converter import convert_html_node_to_data, convert_html_node_group_to_rule
+from scraperx.utils.html_extract import to_simple_text
 from ._cluster import HtmlNode
 
 logger = logging.getLogger(__name__)
 
 
-def parse_html_ml(html: str, url: str, css="*[class]", eps: float = 0.2,
-                  root: bool = True, href: bool = True, degrade_css: str = "*") -> List[HtmlScrapeResultEntity]:
+def parse_html_cluster(html: str, url: str, css="*[class]", eps: float = 0.2,
+                       root: bool = False, href: bool = True, degrade_css: str = "*") -> List[HtmlScrapeResultEntity]:
     feature = train.parse_as_nodes(html, url, css=css)
     logger.info("parse html ml css=%s, eps=%s, feature=%d, url=%s", css, eps, len(feature), url)
     if not feature:
@@ -45,8 +45,6 @@ def parse_html_ml(html: str, url: str, css="*[class]", eps: float = 0.2,
         ))
     for entity in results:
         for item in entity.data:
-            item['text'] = re.sub("\n+[\r\n\t\s ]+", "\n", item['text'])
-            item['text'] = re.sub("\t+[\t\s ]+", "\t", item['text'])
-            item['text'] = re.sub("[\s ]+", " ", item['text'])
+            item['text'] = to_simple_text(item['text'])
     return sorted(results, key=lambda x: sum(map(lambda item: len(item['text']), x.data)) / math.sqrt(len(x.data)),
                   reverse=True)

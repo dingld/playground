@@ -8,7 +8,7 @@ SessionLocal: sessionmaker = sessionmaker(autocommit=False, autoflush=False)
 
 def bind_url(url: str):
     engine = create_engine(
-        url
+        url, pool_recycle=900
     )
     SessionLocal.kw['bind'] = engine
 

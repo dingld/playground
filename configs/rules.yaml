@@ -19,7 +19,7 @@ rules:
     type: 10
     rules:
       - WITH A AS (SELECT response.base_url, node.*
-        FROM response, html_each(response.source, '.b_algo,.fl') AS node),
+        FROM response, html_each(response.source, '.b_algo') AS node),
         B AS (SELECT html_text(html, '.b_title') as title,
         html_text(html, '.b_caption') as text,
         html_attr_get(html, 'a[class]', 'href') as link
@@ -37,6 +37,24 @@ rules:
         B AS (SELECT html_text(html, '.MUxGbd.wuQ4Ob.WZ8Tjf') as date,
         html_text(html, 'h3') as title,
         text,
+        html_attr_get(html, 'a[class]', 'href') as link
+        FROM A)
+        SELECT * FROM B WHERE link is not null
+    ttl: 86400
+
+  - name: douban-group-search
+    domain: douban.com
+    path: /group
+    type: 10
+    rules:
+      - WITH A AS (SELECT response.base_url, node.*
+        FROM response, html_each(response.source, 'table.olt tr') AS node),
+        B AS (SELECT selector_to_text(html, '.time') as date,
+        selector_to_text(html, '.r-count') as reply_count,
+        selector_to_text(html, 'td[nowrap] > a') as author_name,
+        selector_to_attr(html, 'td[nowrap] > a', 'href') as author_url,
+        to_simple_text(html_attr_get(html, 'a[title]', 'title')) as title,
+        to_simple_text(text) as text,
         html_attr_get(html, 'a[class]', 'href') as link
         FROM A)
         SELECT * FROM B WHERE link is not null

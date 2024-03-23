@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime, TEXT, SmallInteger
+from sqlalchemy import Column, String, Integer, DateTime, TEXT, SmallInteger, BLOB
 
 from scraperx.model.base import DeclarativeBase
 
@@ -20,6 +20,7 @@ class HtmlRuleModel(DeclarativeBase):
     status = Column(SmallInteger, nullable=False)
     rules = Column(TEXT, nullable=False)
     ttl = Column(Integer, nullable=False)
+    html = Column(BLOB, nullable=True)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 

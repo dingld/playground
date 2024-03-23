@@ -16,6 +16,10 @@ from sklearn.preprocessing import OneHotEncoder
 logger = logging.getLogger("parser.cluster")
 
 
+def filter_classname(classname: str) -> str:
+    return re.sub("[\s]+", " ", classname.strip())
+
+
 @dataclass
 class HtmlNode:
     tag: str
@@ -31,7 +35,7 @@ class HtmlNode:
         node = sel.root
         attrib = dict(node.attrib)
         return cls(tag=node.tag,
-                   class_name=attrib.pop("class", ""),
+                   class_name=filter_classname(attrib.pop("class", "")),
                    attrib=attrib,
                    children=list(map(lambda x: cls.from_element(x, tree), sel.xpath("./*"))),
                    sel=sel,
@@ -44,11 +48,6 @@ class HtmlNode:
             tag=self.tag,
             class_name=self.class_name
         )
-        # for x in self.attrib:
-        #     item["attrib.%s" % x] = 1
-        #
-        # for y in self.children:
-        #     item["children.%s" % y] = 1
 
         item['head'] = self.get_head(self.html_element)
         for key, value in item.items():
@@ -117,8 +116,8 @@ class HtmlNode:
     def get_head(self, element: HtmlElement):
         id = dict(element.attrib).get("id", "")
         if id:
-            return "#.%s" % id
-        class_name = dict(element.attrib).get("class", "")
+            return "#%s" % id
+        class_name = filter_classname(dict(element.attrib).get("class", ""))
         if class_name:
             return "%s.%s" % (element.tag, ".".join(class_name.split(" ")))
         return element.tag

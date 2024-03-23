@@ -38,3 +38,8 @@ async def toggle_task(rule_id: int, status: int) -> HtmlRuleToggleResponseEntity
     if not HtmlRuleStatus.is_legal(status):
         return HtmlRuleToggleResponseEntity.construct(ok=1, message="illegal status")
     return rule_service.toggle_start_stop(rule_id=rule_id, status=status)
+
+
+@app.put("/{rule_id}/html")
+async def update_rule(rule_id: int, request: HtmlRuleRequestEntity) -> HtmlRuleCreateUpdateResponseEntity:
+    return rule_service.update_html(rule_id=rule_id, html=request.html)

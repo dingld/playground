@@ -6,6 +6,7 @@ from typing import List
 
 import pandas as pd
 
+from scraperx.utils.html_extract import to_simple_text, selector_to_text, selector_to_attr
 from scraperx.utils.misc import get_project_path
 
 _gloable_session: Connection = None
@@ -20,6 +21,9 @@ def init_sqlite3_conn(extension_path: str = None):
         global _LOADED
         conn.enable_load_extension(True)
         conn.load_extension(extension_path)
+        conn.create_function("to_simple_text", 1, to_simple_text)
+        conn.create_function("selector_to_text", 2, selector_to_text)
+        conn.create_function("selector_to_attr", 3, selector_to_attr)
         _gloable_session = conn
         df = pd.DataFrame([{"source": "source", "base_url": "base_url", "created_at": int(time())}])
         df.to_sql("response", con=conn, if_exists="replace")

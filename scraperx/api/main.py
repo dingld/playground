@@ -3,12 +3,14 @@ from fastapi import FastAPI
 
 from scraperx.api import rule
 from scraperx.api import scrape
+from scraperx.api import validate
 from scraperx.dao import session
 from scraperx.utils.config import read_config_key, set_config_level_fmt
 
 app = FastAPI()
 # app.mount("/api/v1/admin/tasks", tasks.app, "tasks")
 app.mount("/api/v1/admin/rule", rule.app, "rule")
+app.mount("/api/v1/admin/validate", validate.app, "validate")
 app.mount("/api/v1/admin/scrape", scrape.app, "scrape")
 
 

@@ -2,6 +2,8 @@ import datetime
 import json
 from typing import List
 
+from w3lib.url import to_bytes
+
 from scraperx.dao.session import SessionLocal
 from scraperx.entities.rule import HtmlRuleRequestEntity, HtmlRuleListResponseEntity, \
     HtmlRuleSingleResponseEntity, HtmlRuleCreateUpdateResponseEntity, HtmlRuleDeleteResponseEntity, \
@@ -49,8 +51,6 @@ def create_obj(request: HtmlRuleRequestEntity):
 
 def update_obj(rule_id: int, request: HtmlRuleRequestEntity):
     with SessionLocal() as session:
-        convert_request_to_html_rule_model(request)
-
         model: HtmlRuleModel = session.query(HtmlRuleModel).filter_by(id=rule_id).first()
         if not model:
             return HtmlRuleCreateUpdateResponseEntity.construct(ok=1, message="rule not exists")
@@ -62,6 +62,19 @@ def update_obj(rule_id: int, request: HtmlRuleRequestEntity):
         model.path = request.path
         model.type = request.type
         model.rules = json.dumps(request.rules)
+        model.updated_at = datetime.datetime.now()
+        session.merge(model)
+        session.commit()
+        return HtmlRuleCreateUpdateResponseEntity.construct(ok=0,
+                                                            data=convert_model_to_html_rule_response_entity(model))
+
+
+def update_html(rule_id: int, html: str):
+    with SessionLocal() as session:
+        model: HtmlRuleModel = session.query(HtmlRuleModel).filter_by(id=rule_id).first()
+        if not model:
+            return HtmlRuleCreateUpdateResponseEntity.construct(ok=1, message="rule not exists")
+        model.html = to_bytes(html)
         model.updated_at = datetime.datetime.now()
         session.merge(model)
         session.commit()
